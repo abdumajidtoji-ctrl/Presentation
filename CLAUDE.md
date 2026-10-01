@@ -31,6 +31,9 @@ EPC+F). Владелец — руководитель отдела продаж 
 `assets/vendor/` — проверены рендером в Chromium этой среды:
 - `three/` — Three.js r128: `three.min.js` (UMD), `three.module.js`,
   `OrbitControls.js`. Для 3D-моделей подстанций, ЛЭП, СЭС.
+  `three/post/` — постобработка r128 (UMD): EffectComposer, UnrealBloomPass
+  и зависимости (Pass, RenderPass, ShaderPass, CopyShader,
+  LuminosityHighPassShader) — свечение «нур» в ночных сценах.
 - `gsap/` — GSAP 3.15.0, все 25 плагинов (бесплатны, Standard License):
   ScrollTrigger (скролл-режиссура), DrawSVGPlugin (отрисовка схем),
   SplitText (анимация заголовков), MotionPathPlugin (поток энергии),
