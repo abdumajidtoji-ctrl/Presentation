@@ -6,8 +6,13 @@ BESS), а подписи и секции объясняют происходящ
 
 ## Стек
 
-- **Three.js** (cdnjs) — 3D-сцена. Подключать с одобренного CDN
-  (cdnjs.cloudflare.com), версию фиксировать.
+- **Three.js** — 3D-сцена. Локальная копия в репозитории:
+  `assets/vendor/three/` (r128: `three.min.js` UMD, `three.module.js`,
+  `OrbitControls.js`). Для локального рендера и проверки через
+  Playwright подключать локальный файл; в публикуемом артефакте —
+  либо тот же файл через `files`, либо одобренный CDN
+  (cdnjs.cloudflare.com), версию фиксировать (r128 — последняя
+  UMD-версия на cdnjs, совпадает с локальной).
 - **GSAP + ScrollTrigger** (cdnjs) — скролл-анимация и таймлайны. Либо
   собственный rAF-движок на `IntersectionObserver` + lerp, если GSAP
   избыточен.
