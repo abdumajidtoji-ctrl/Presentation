@@ -23,6 +23,9 @@ body{margin:0;background:var(--night);color:var(--white);font-family:var(--font-
 #veil{position:fixed;inset:0;background:var(--night);opacity:0;pointer-events:none;z-index:1}
 #vign{position:fixed;inset:0;pointer-events:none;z-index:1;
   background:radial-gradient(ellipse at 50% 45%, transparent 55%, rgba(4,9,18,.55) 100%)}
+#scrim{position:fixed;inset:0;pointer-events:none;z-index:1;opacity:0;
+  background:linear-gradient(90deg,rgba(6,15,30,.95) 0%,rgba(6,15,30,.82) 30%,rgba(6,15,30,.38) 52%,transparent 68%)}
+@media (max-width:760px){#scrim{background:rgba(6,15,30,.7)}}
 #cos{position:fixed;inset:0;pointer-events:none;z-index:2}
 .no3d #stage,.no3d #cos{display:none}
 .no3d body,body.no3d{background:linear-gradient(180deg,#081426 0%,#0E2240 60%,#081426 100%)}
@@ -147,13 +150,12 @@ h2{font-size:clamp(24px,3.4vw,40px);font-weight:700;letter-spacing:-.01em;margin
 .ph.on{color:var(--white);border-color:rgba(255,176,46,.45);background:rgba(255,176,46,.08)}
 .ph.on span{color:var(--nur)}
 
-/* ---------- компетенции ---------- */
-.grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:14px;margin-top:24px}
-.feat{background:rgba(14,34,64,.8);border:1px solid rgba(45,212,232,.14);border-radius:12px;padding:20px}
-.feat b{display:block;font-family:var(--font-d);font-size:17px;font-weight:700;margin-bottom:8px}
-.feat b::before{content:"";display:inline-block;width:8px;height:8px;border-radius:2px;
-  background:var(--turq);margin-right:10px;box-shadow:0 0 10px rgba(45,212,232,.8);vertical-align:2px}
-.feat p{margin:0;color:var(--muted);font-size:14.5px}
+/* ---------- компетенции: текстовый рельс слева, объект виден справа ---------- */
+.rail{max-width:470px}
+.feats{display:flex;flex-direction:column;gap:22px;margin-top:30px}
+.feat{border-left:2px solid rgba(45,212,232,.55);padding:2px 0 3px 16px}
+.feat b{display:block;font-family:var(--font-d);font-size:16.5px;font-weight:700;margin-bottom:5px}
+.feat p{margin:0;color:var(--muted);font-size:14px;max-width:44ch}
 
 /* ---------- EPC+F ---------- */
 .fin{width:100%;height:auto;display:block;margin-top:10px}
@@ -173,13 +175,14 @@ h2{font-size:clamp(24px,3.4vw,40px);font-weight:700;letter-spacing:-.01em;margin
   font-size:14.5px;color:var(--muted)}
 .finlist b{color:var(--white);font-variant-numeric:tabular-nums;font-family:var(--font-m);font-weight:600}
 
-/* ---------- финал ---------- */
-#final .card{max-width:620px}
-.cta{display:inline-block;margin-top:20px;padding:13px 26px;border-radius:10px;
+/* ---------- финал: компактный рельс слева, станция в кадре справа ---------- */
+#final .card{max-width:540px;padding:22px 26px;background:none;border:0;backdrop-filter:none}
+#final .lead{font-size:15px;max-width:46ch}
+.cta{display:inline-block;margin-top:18px;padding:12px 24px;border-radius:10px;
   font-family:var(--font-d);font-weight:700;font-size:16px;color:#1A1200;
   background:linear-gradient(135deg,var(--nur),var(--nur-bright));
   box-shadow:0 0 28px rgba(255,176,46,.5)}
-.fineprint{margin-top:26px;font-size:12.5px;color:var(--muted);font-family:var(--font-m)}
+.fineprint{margin-top:22px;font-size:11.5px;color:var(--muted);font-family:var(--font-m);line-height:1.7}
 
 @media (max-width:760px){
   .split{grid-template-columns:1fr;gap:10px}
@@ -198,6 +201,7 @@ h2{font-size:clamp(24px,3.4vw,40px);font-weight:700;letter-spacing:-.01em;margin
 
 <div id="stage"></div>
 <div id="veil"></div>
+<div id="scrim"></div>
 <div id="vign"></div>
 <div id="cos"></div>
 <div id="progress"><i id="pgfill"></i></div>
@@ -350,10 +354,10 @@ h2{font-size:clamp(24px,3.4vw,40px);font-weight:700;letter-spacing:-.01em;margin
 <!-- S6 NURA -->
 <section id="nura" class="h2x" data-nav="Почему NURA">
   <div class="pin">
-    <div>
+    <div class="rail">
       <p class="eyebrow">Исполнитель</p>
       <h2>Почему NURA EPC</h2>
-      <div class="grid2" id="feats">
+      <div class="feats" id="feats">
         <div class="feat"><b>Полный EPC-цикл</b><p>Проектирование, поставка, СМР и&nbsp;ПНР — единая ответственность одного подрядчика за&nbsp;срок, бюджет и&nbsp;качество.</p></div>
         <div class="feat"><b>Собственное производство</b><p>Шкафы РЗА, АСУ&nbsp;ТП и&nbsp;вторичной коммутации производства NURA&nbsp;ELECTRIC — контроль ключевой номенклатуры.</p></div>
         <div class="feat"><b>Лицензии и сертификаты</b><p>Полный пакет разрешительной документации на&nbsp;строительство объектов 10–500&nbsp;кВ.</p></div>
@@ -702,8 +706,8 @@ function layout(){
   kf('build',1, 62,42,66, 0,4,0);
   kf('nura',.5, -80,30,82, 0,7,0);
   kf('finance',.5, -100,44,-72, 0,8,0);
-  kf('final',0, 80,32,-98, 0,9,0);
-  kf('final',1, 118,44,-132, 0,10,0);
+  kf('final',0, 66,27,-82, 0,8,0);
+  kf('final',1, 96,37,-112, 0,9,0);
   keys.sort(function(a,b){return a.y-b.y;});
   if(renderer){ renderer.setSize(innerWidth,innerHeight);
     camera.aspect=innerWidth/innerHeight; camera.updateProjectionMatrix(); }
@@ -728,7 +732,7 @@ function camAt(y){
   }
 }
 
-var heroBox=$('heroBox'), veil=$('veil'), pfill=$('pfill'), moNum=$('moNum'),
+var heroBox=$('heroBox'), veil=$('veil'), scrim=$('scrim'), pfill=$('pfill'), moNum=$('moNum'),
     pgfill=$('pgfill'),
     phEls=document.querySelectorAll('#phases .ph'),
     stepEls=document.querySelectorAll('#stepList li'),
@@ -763,8 +767,12 @@ function update(){
   heroBox.style.transform='translateY('+(-th*40)+'px)';
   var win=function(t){ if(t<=0||t>=1) return 0;
     return sm(Math.min(1,t/.12))*(1-sm(Math.max(0,(t-.85)/.15))); };
-  var dim=Math.max(win(secT('scheme')),win(secT('finance')),sm(secT('nura'))*.4);
+  var dim=Math.max(win(secT('scheme')),win(secT('finance')));
   veil.style.opacity=(dim*.7).toFixed(3);
+  // боковой скрим: текстовый рельс читается, объект остаётся виден справа
+  var tn=secT('nura'), tf0=secT('final');
+  var scr=Math.max(win(tn), tf0>0?sm(Math.min(1,tf0/.15)):0);
+  scrim.style.opacity=scr.toFixed(3);
   domOnly();
   if(!renderer) return;
   // разрез
@@ -798,7 +806,14 @@ function projectCOs(){
   });
 }
 
-var maxScroll=1;
+var maxScroll=1, shiftCur=0;
+function viewShift(){
+  if(innerWidth<761) return 0;
+  var th=secT('hero'), tn=secT('nura'), tf=secT('final');
+  var pres=function(t){ if(t<=0||t>=1) return 0;
+    return sm(Math.min(1,t/.12))*(1-sm(Math.max(0,(t-.85)/.15))); };
+  return Math.max(.085*(1-sm(th)), .17*pres(tn), .15*(tf>0?sm(Math.min(1,tf/.15)):0));
+}
 function tick(){
   curY = smoother ? smoother.scrollTop() : (window.scrollY||0);
   update();
@@ -808,6 +823,9 @@ function tick(){
   var k=RM?1:0.12;
   camP.lerp(goalP,k); camT.lerp(goalT,k);
   camera.position.copy(camP); camera.lookAt(camT);
+  shiftCur+=(viewShift()-shiftCur)*(RM?1:.1);
+  if(shiftCur>0.002) camera.setViewOffset(innerWidth,innerHeight,-shiftCur*innerWidth,0,innerWidth,innerHeight);
+  else if(camera.view&&camera.view.enabled) camera.clearViewOffset();
   renderer.render(scene,camera);
   projectCOs();
 }
