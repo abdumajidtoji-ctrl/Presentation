@@ -147,18 +147,22 @@ h2{font-size:clamp(24px,3.4vw,40px);font-weight:700;letter-spacing:-.01em;margin
   @keyframes dash{to{stroke-dashoffset:-14}}
 }
 
-/* ---------- этапы строительства ---------- */
-.phasebox{max-width:760px}
-.months{font-family:var(--font-m);font-size:13px;color:var(--turq);margin-top:4px}
-.pbar{height:6px;border-radius:3px;background:rgba(30,58,95,.8);margin:18px 0 14px;overflow:hidden}
-.pbar i{display:block;height:100%;width:0;border-radius:3px;
+/* ---------- этапы строительства: компактная HUD-полоса, сцена видна ---------- */
+.phasebox{max-width:1060px;width:100%;padding:13px 20px 12px;background:rgba(10,24,45,.66)}
+.bld-head{display:flex;align-items:baseline;gap:20px;flex-wrap:wrap}
+.bld-head h2{font-size:clamp(16px,1.5vw,20px);margin:0}
+.months{font-family:var(--font-m);font-size:12px;color:var(--turq);margin-left:auto}
+.pbar{height:4px;border-radius:2px;background:rgba(30,58,95,.8);margin:10px 0;overflow:hidden}
+.pbar i{display:block;height:100%;width:0;border-radius:2px;
   background:linear-gradient(90deg,var(--nur),var(--nur-bright));
-  box-shadow:0 0 12px rgba(255,176,46,.7)}
-.phases{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
-.ph{padding:12px 12px 10px;border-radius:10px;border:1px solid rgba(45,212,232,.12);
-  background:rgba(14,34,64,.6);color:var(--muted);transition:all .35s}
-.ph b{display:block;font-family:var(--font-d);font-size:14px;font-weight:700;color:inherit}
-.ph span{font-family:var(--font-m);font-size:11px}
+  box-shadow:0 0 10px rgba(255,176,46,.7)}
+.phases{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.ph{display:flex;justify-content:space-between;align-items:baseline;gap:8px;
+  padding:7px 11px;border-radius:8px;border:1px solid rgba(45,212,232,.12);
+  background:rgba(14,34,64,.55);color:var(--muted);transition:all .35s;min-width:0}
+.ph b{font-family:var(--font-d);font-size:12.5px;font-weight:700;color:inherit;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ph span{font-family:var(--font-m);font-size:10.5px;flex:none}
 .ph.on{color:var(--white);border-color:rgba(255,176,46,.45);background:rgba(255,176,46,.08)}
 .ph.on span{color:var(--nur)}
 
@@ -234,7 +238,7 @@ h2{font-size:clamp(24px,3.4vw,40px);font-weight:700;letter-spacing:-.01em;margin
       <div class="goldline" id="heroLine"></div>
       <span class="demo-badge">ДЕМОНСТРАЦИОННЫЕ ДАННЫЕ</span>
     </div>
-    <div class="scroll-hint">Листайте</div>
+    <div class="scroll-hint" id="hint">Листайте</div>
   </div>
 </section>
 
@@ -258,7 +262,7 @@ h2{font-size:clamp(24px,3.4vw,40px);font-weight:700;letter-spacing:-.01em;margin
 <!-- S2 ОБЛЁТ -->
 <section id="tour" class="h4x" data-nav="Состав объекта">
   <div class="pin top">
-    <div style="max-width:520px">
+    <div id="tourBox" style="max-width:520px">
       <p class="eyebrow">Состав объекта</p>
       <h2>Что мы строим</h2>
       <p class="lead" style="margin-top:6px">Открытые распредустройства 220 и&nbsp;110&nbsp;кВ,
@@ -350,15 +354,16 @@ h2{font-size:clamp(24px,3.4vw,40px);font-weight:700;letter-spacing:-.01em;margin
 <section id="build" class="h35" data-nav="График">
   <div class="pin bottom">
     <div class="card phasebox">
-      <p class="eyebrow" style="margin-bottom:6px">График реализации</p>
-      <h2 style="font-size:clamp(20px,2.6vw,30px)">18 месяцев — четыре этапа</h2>
-      <div class="months">Месяц <b id="moNum" style="color:var(--nur)">1</b> из 18</div>
+      <div class="bld-head">
+        <h2>График реализации — 18 месяцев</h2>
+        <div class="months">Месяц <b id="moNum" style="color:var(--nur)">1</b> из 18</div>
+      </div>
       <div class="pbar"><i id="pfill"></i></div>
       <div class="phases" id="phases">
-        <div class="ph"><b>Фундаменты</b><span>мес 1–4</span></div>
-        <div class="ph"><b>Металлоконструкции и здания</b><span>мес 4–9</span></div>
-        <div class="ph"><b>Монтаж оборудования</b><span>мес 8–14</span></div>
-        <div class="ph"><b>Ошиновка и ПНР</b><span>мес 13–18</span></div>
+        <div class="ph"><b>Фундаменты</b><span>1–4</span></div>
+        <div class="ph"><b>Металлоконструкции</b><span>4–9</span></div>
+        <div class="ph"><b>Монтаж оборудования</b><span>8–14</span></div>
+        <div class="ph"><b>Ошиновка и ПНР</b><span>13–18</span></div>
       </div>
     </div>
   </div>
@@ -765,7 +770,7 @@ function layout(){
   kf('hero',0, 158,64,170, 0,10,0);
   kf('hero',1, 132,56,146, 0,9,0);
   kf('kpi',.6, 98,48,116, 0,7,0);
-  var R=[88,88,86,84,82,74],H=[34,31,27,23,20,16],A=[38,86,148,210,268,330];
+  var R=[90,90,88,86,84,78],H=[38,35,31,28,25,21],A=[38,86,148,210,268,330];
   var T=[[8,7,0],[2,7,8],[-40,8,0],[-20,7,-8],[0,8,-10],[-5,6,-10]];
   for(var i=0;i<6;i++){var a=A[i]*Math.PI/180;
     kf('tour',i/5, Math.cos(a)*R[i],H[i],Math.sin(a)*R[i], T[i][0],T[i][1],T[i][2]);}
@@ -804,6 +809,7 @@ function camAt(y){
 }
 
 var heroBox=$('heroBox'), veil=$('veil'), scrim=$('scrim'), pfill=$('pfill'), moNum=$('moNum'),
+    tourBox=$('tourBox'), hintEl=$('hint'),
     pgfill=$('pgfill'),
     phEls=document.querySelectorAll('#phases .ph'),
     stepEls=document.querySelectorAll('#stepList li'),
@@ -836,6 +842,9 @@ function update(){
   if(renderer) camAt(curY);
   var th=secT('hero'); heroBox.style.opacity=Math.max(0,1-th*1.6);
   heroBox.style.transform='translateY('+(-th*40)+'px)';
+  if(hintEl) hintEl.style.opacity=Math.max(0,1-th*5);
+  if(tourBox){ var tt=secT('tour'); // вступление облёта уходит, оставляя сцену выноскам
+    tourBox.style.opacity=Math.max(0,Math.min(1,1-(tt-.26)/.12)).toFixed(2); }
   var win=function(t){ if(t<=0||t>=1) return 0;
     return sm(Math.min(1,t/.12))*(1-sm(Math.max(0,(t-.85)/.15))); };
   var dim=Math.max(win(secT('scheme')),win(secT('finance')));
