@@ -4,6 +4,7 @@
   "private": true,
   "description": "Система презентаций NURA GROUP / NURA EPC: интерактивные web-презентации (Three.js 3D, GSAP скролл) и PowerPoint/PDF",
   "dependencies": {
+    "chart.js": "^4.5.1",
     "gsap": "^3.15.0",
     "three": "0.128.0"
   }

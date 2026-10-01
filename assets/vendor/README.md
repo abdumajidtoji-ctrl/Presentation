@@ -23,3 +23,11 @@ Flip, Draggable, CustomEase и др.
 
 Проверено в среде Claude Code (Chromium): core 3.15.0 + ScrollTrigger +
 DrawSVG + SplitText + MotionPath — рабочие.
+
+## chartjs/ — Chart.js 4.5.1 (npm chart.js)
+
+- `chart.umd.min.js` — UMD-сборка, обычный `<script src=...>`;
+- `LICENSE.md` — MIT.
+
+Нужен скиллу slides (графики в HTML-презентациях). Проверен рендером
+в Chromium этой среды.
