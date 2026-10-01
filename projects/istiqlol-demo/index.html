@@ -1,0 +1,810 @@
+<title>ПС «Истиклол» 220 кВ</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@600;700;800&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<style>
+/* Ночная презентация NURA: глубокое ночное небо + золотой свет «НУР» + бирюза Самарканда.
+   Единая тёмная тема — осознанный выбор (ночной кадр объекта). */
+:root{
+  --night:#081426; --deep:#0E2240; --steel:#1E3A5F;
+  --white:#F4F8FF; --muted:#93A5BC;
+  --nur:#FFB02E; --nur-bright:#FFD166;
+  --turq:#2DD4E8; --emerald:#2EBD85;
+  --chart-turq:#0FA3B8; --chart-gold:#C97C03; --chart-em:#27A474;
+  --font-d:"Manrope",system-ui,sans-serif;
+  --font-b:"Inter",system-ui,sans-serif;
+  --font-m:"IBM Plex Mono",ui-monospace,monospace;
+  color-scheme:dark;
+}
+html{scroll-behavior:auto}
+body{margin:0;background:var(--night);color:var(--white);font-family:var(--font-b);
+  font-size:16px;line-height:1.55;overflow-x:hidden}
+#stage{position:fixed;inset:0;z-index:0}
+#stage canvas{display:block;width:100%;height:100%}
+#veil{position:fixed;inset:0;background:var(--night);opacity:0;pointer-events:none;z-index:1}
+#vign{position:fixed;inset:0;pointer-events:none;z-index:1;
+  background:radial-gradient(ellipse at 50% 45%, transparent 55%, rgba(4,9,18,.55) 100%)}
+#cos{position:fixed;inset:0;pointer-events:none;z-index:2}
+main{position:relative;z-index:3}
+.no3d #stage,.no3d #cos{display:none}
+.no3d body,body.no3d{background:linear-gradient(180deg,#081426 0%,#0E2240 60%,#081426 100%)}
+
+/* ---------- секции ---------- */
+section{position:relative}
+.h1x{height:100vh}.h15{height:150vh}.h2x{height:200vh}.h25{height:250vh}
+.h3x{height:300vh}.h35{height:350vh}.h4x{height:400vh}
+.pin{position:sticky;top:0;height:100vh;display:flex;flex-direction:column;
+  justify-content:center;box-sizing:border-box;padding:24px min(6vw,72px)}
+.pin.top{justify-content:flex-start;padding-top:min(10vh,96px)}
+.pin.bottom{justify-content:flex-end;padding-bottom:min(9vh,88px)}
+
+.card{background:rgba(14,34,64,.78);backdrop-filter:blur(10px);
+  border:1px solid rgba(45,212,232,.16);border-radius:14px;padding:22px 26px}
+.eyebrow{font-family:var(--font-m);font-size:12px;letter-spacing:.22em;
+  text-transform:uppercase;color:var(--turq);margin:0 0 14px}
+h1,h2{font-family:var(--font-d);text-wrap:balance;margin:0}
+h1{font-size:clamp(30px,5.2vw,62px);font-weight:800;line-height:1.08;letter-spacing:-.015em}
+h2{font-size:clamp(24px,3.4vw,40px);font-weight:700;letter-spacing:-.01em;margin-bottom:14px}
+.lead{font-size:clamp(16px,1.6vw,19px);color:var(--muted);max-width:56ch;margin:14px 0 0}
+.goldline{width:64px;height:3px;border-radius:2px;margin:18px 0 0;
+  background:linear-gradient(90deg,var(--nur),var(--nur-bright));
+  box-shadow:0 0 14px rgba(255,176,46,.55)}
+
+/* ---------- титул ---------- */
+#hero .pin{align-items:flex-start}
+.brand{font-family:var(--font-d);font-weight:700;letter-spacing:.3em;font-size:13px;color:var(--white)}
+.brand b{color:var(--nur)}
+.demo-badge{display:inline-block;font-family:var(--font-m);font-size:11px;letter-spacing:.08em;
+  color:var(--nur-bright);border:1px solid rgba(255,176,46,.45);border-radius:999px;
+  padding:4px 12px;margin-top:20px;background:rgba(255,176,46,.08)}
+.scroll-hint{position:absolute;left:50%;bottom:26px;transform:translateX(-50%);
+  font-family:var(--font-m);font-size:11px;letter-spacing:.2em;color:var(--muted);
+  text-transform:uppercase;text-align:center}
+.scroll-hint::after{content:"";display:block;width:1px;height:34px;margin:10px auto 0;
+  background:linear-gradient(180deg,var(--turq),transparent)}
+@media (prefers-reduced-motion:no-preference){
+  .scroll-hint::after{animation:drop 1.8s ease-in-out infinite}
+  @keyframes drop{0%{transform:scaleY(.2);transform-origin:top}55%{transform:scaleY(1)}100%{opacity:0;transform:scaleY(1)}}
+}
+
+/* ---------- КПЭ ---------- */
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(168px,1fr));gap:14px;margin-top:26px}
+.kpi{background:rgba(14,34,64,.8);border:1px solid rgba(45,212,232,.14);border-radius:12px;
+  padding:18px 18px 15px}
+.kpi .v{font-family:var(--font-m);font-weight:600;font-size:clamp(26px,3vw,36px);
+  font-variant-numeric:tabular-nums;color:var(--nur);
+  text-shadow:0 0 22px rgba(255,176,46,.4);white-space:nowrap}
+.kpi .v small{font-size:.52em;color:var(--nur-bright);font-weight:500}
+.kpi .l{font-size:13px;color:var(--muted);margin-top:6px;line-height:1.35}
+
+/* ---------- выноски ---------- */
+.co{position:absolute;left:0;top:0;opacity:0;will-change:transform,opacity}
+.co-dot{position:absolute;left:-5px;top:-5px;width:10px;height:10px;border-radius:50%;
+  background:var(--nur);box-shadow:0 0 12px rgba(255,176,46,.9),0 0 3px #fff inset}
+.co-tx{position:absolute;left:14px;bottom:10px;white-space:nowrap;
+  border-left:1px solid rgba(255,176,46,.6);padding:2px 0 2px 10px}
+.co-tx b{display:block;font-family:var(--font-d);font-weight:700;font-size:15px}
+.co-tx i{display:block;font-style:normal;font-family:var(--font-m);font-size:11.5px;color:var(--turq)}
+
+/* ---------- схема ---------- */
+.split{display:grid;grid-template-columns:minmax(0,400px) minmax(0,1fr);gap:36px;align-items:center}
+.sld{width:100%;max-width:400px;height:auto;display:block}
+.steps{list-style:none;margin:18px 0 0;padding:0;display:flex;flex-direction:column;gap:10px}
+.steps li{display:flex;gap:14px;align-items:baseline;padding:12px 16px;border-radius:10px;
+  border:1px solid transparent;color:var(--muted);transition:all .35s}
+.steps li .n{font-family:var(--font-m);font-size:12px;color:var(--steel);min-width:22px}
+.steps li.on{color:var(--white);background:rgba(255,176,46,.07);border-color:rgba(255,176,46,.3)}
+.steps li.on .n{color:var(--nur)}
+.steps b{font-weight:600}
+.steps small{display:block;font-size:13px;color:var(--muted)}
+/* линии схемы */
+.sld .wire{stroke:#2E4A6B;stroke-width:1.6;fill:none}
+.sld .busln{stroke:#3A5A82;stroke-width:3.2}
+.sld .sym{stroke:#4C6E97;stroke-width:1.6;fill:none}
+.sld text{font-family:var(--font-m);font-size:10.5px;fill:var(--muted)}
+.sld .flow{stroke:var(--nur);stroke-width:2;fill:none;stroke-dasharray:5 9;opacity:0;
+  filter:drop-shadow(0 0 4px rgba(255,176,46,.8));transition:opacity .4s}
+.sld .flow.go{opacity:1}
+.sld .lit{stroke:var(--nur-bright)!important;filter:drop-shadow(0 0 3px rgba(255,176,46,.6))}
+@media (prefers-reduced-motion:no-preference){
+  .sld .flow{animation:dash 1.1s linear infinite}
+  @keyframes dash{to{stroke-dashoffset:-14}}
+}
+
+/* ---------- этапы строительства ---------- */
+.phasebox{max-width:760px}
+.months{font-family:var(--font-m);font-size:13px;color:var(--turq);margin-top:4px}
+.pbar{height:6px;border-radius:3px;background:rgba(30,58,95,.8);margin:18px 0 14px;overflow:hidden}
+.pbar i{display:block;height:100%;width:0;border-radius:3px;
+  background:linear-gradient(90deg,var(--nur),var(--nur-bright));
+  box-shadow:0 0 12px rgba(255,176,46,.7)}
+.phases{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+.ph{padding:12px 12px 10px;border-radius:10px;border:1px solid rgba(45,212,232,.12);
+  background:rgba(14,34,64,.6);color:var(--muted);transition:all .35s}
+.ph b{display:block;font-family:var(--font-d);font-size:14px;font-weight:700;color:inherit}
+.ph span{font-family:var(--font-m);font-size:11px}
+.ph.on{color:var(--white);border-color:rgba(255,176,46,.45);background:rgba(255,176,46,.08)}
+.ph.on span{color:var(--nur)}
+
+/* ---------- компетенции ---------- */
+.grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:14px;margin-top:24px}
+.feat{background:rgba(14,34,64,.8);border:1px solid rgba(45,212,232,.14);border-radius:12px;padding:20px}
+.feat b{display:block;font-family:var(--font-d);font-size:17px;font-weight:700;margin-bottom:8px}
+.feat b::before{content:"";display:inline-block;width:8px;height:8px;border-radius:2px;
+  background:var(--turq);margin-right:10px;box-shadow:0 0 10px rgba(45,212,232,.8);vertical-align:2px}
+.feat p{margin:0;color:var(--muted);font-size:14.5px}
+
+/* ---------- EPC+F ---------- */
+.fin{width:100%;height:auto;display:block;margin-top:10px}
+.fin .nbox{fill:rgba(14,34,64,.92);stroke:rgba(45,212,232,.3);rx:10}
+.fin .nbox.main{stroke:var(--nur);stroke-width:1.6}
+.fin text{font-family:var(--font-d);font-weight:700;font-size:15px;fill:var(--white)}
+.fin .sub{font-family:var(--font-m);font-weight:400;font-size:10.5px;fill:var(--muted)}
+.fin .amt{font-family:var(--font-m);font-weight:600;font-size:11.5px;fill:var(--nur-bright)}
+.fin .amt.t{fill:var(--turq)}.fin .amt.e{fill:var(--emerald)}
+.fin .fl{fill:none;stroke-width:2;stroke-dasharray:5 9}
+.fin .fl.g{stroke:var(--nur);filter:drop-shadow(0 0 4px rgba(255,176,46,.7))}
+.fin .fl.t{stroke:var(--turq);filter:drop-shadow(0 0 4px rgba(45,212,232,.6))}
+.fin .fl.e{stroke:var(--emerald);filter:drop-shadow(0 0 4px rgba(46,189,133,.6))}
+@media (prefers-reduced-motion:no-preference){.fin .fl{animation:dash 1.2s linear infinite}}
+.finlist{margin:20px 0 0;padding:0;list-style:none;display:flex;flex-wrap:wrap;gap:10px 26px;
+  font-size:14.5px;color:var(--muted)}
+.finlist b{color:var(--white);font-variant-numeric:tabular-nums;font-family:var(--font-m);font-weight:600}
+
+/* ---------- финал ---------- */
+#final .card{max-width:620px}
+.cta{display:inline-block;margin-top:20px;padding:13px 26px;border-radius:10px;
+  font-family:var(--font-d);font-weight:700;font-size:16px;color:#1A1200;
+  background:linear-gradient(135deg,var(--nur),var(--nur-bright));
+  box-shadow:0 0 28px rgba(255,176,46,.5)}
+.fineprint{margin-top:26px;font-size:12.5px;color:var(--muted);font-family:var(--font-m)}
+
+@media (max-width:760px){
+  .split{grid-template-columns:1fr;gap:10px}
+  .sld{max-height:38vh;margin:0 auto}
+  .split h2{font-size:20px;margin-bottom:6px}
+  .steps{gap:6px;margin-top:8px}
+  .steps li{padding:7px 12px}
+  .steps small{font-size:11.5px}
+  .phases{grid-template-columns:1fr 1fr}
+  .pin{padding:18px 16px}
+  .card{padding:18px}
+  .co-tx b{font-size:13px}.co-tx i{font-size:10px}
+  .kpi .v{font-size:24px}
+}
+</style>
+
+<div id="stage"></div>
+<div id="veil"></div>
+<div id="vign"></div>
+<div id="cos"></div>
+
+<main>
+
+<!-- S0 ТИТУЛ -->
+<section id="hero" class="h15">
+  <div class="pin">
+    <div id="heroBox">
+      <div class="brand">NURA <b>GROUP</b> · NURA ELECTRIC · NURA EPC</div>
+      <h1 style="margin-top:26px">Подстанция 220/110/10&nbsp;кВ<br>«Истиклол»</h1>
+      <p class="lead">Строительство под&nbsp;ключ в&nbsp;формате EPC&nbsp;+&nbsp;финансирование.
+      Предложение для инвестиционного партнёра.</p>
+      <div class="goldline"></div>
+      <span class="demo-badge">ДЕМОНСТРАЦИОННЫЕ ДАННЫЕ</span>
+    </div>
+    <div class="scroll-hint">Листайте</div>
+  </div>
+</section>
+
+<!-- S1 КПЭ -->
+<section id="kpi" class="h15">
+  <div class="pin">
+    <div>
+      <p class="eyebrow">Суть предложения</p>
+      <h2>Узловая подстанция 220&nbsp;кВ — под&nbsp;ключ, с&nbsp;финансированием</h2>
+      <div class="kpis">
+        <div class="kpi"><div class="v">250 <small>МВА</small></div><div class="l">Установленная мощность — 2&nbsp;автотрансформатора по&nbsp;125&nbsp;МВА</div></div>
+        <div class="kpi"><div class="v">220<small>/110/10 кВ</small></div><div class="l">Три класса напряжения, ОРУ&nbsp;220 и&nbsp;110&nbsp;кВ, ЗРУ&nbsp;10&nbsp;кВ</div></div>
+        <div class="kpi"><div class="v">18 <small>мес</small></div><div class="l">Срок реализации от&nbsp;контракта до&nbsp;ввода в&nbsp;эксплуатацию</div></div>
+        <div class="kpi"><div class="v">48,5 <small>млн USD</small></div><div class="l">Стоимость EPC-контракта (демонстрационная оценка)</div></div>
+        <div class="kpi"><div class="v">85 <small>%</small></div><div class="l">Доля привлекаемого финансирования, срок — 7&nbsp;лет</div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- S2 ОБЛЁТ -->
+<section id="tour" class="h4x">
+  <div class="pin top">
+    <div style="max-width:520px">
+      <p class="eyebrow">Состав объекта</p>
+      <h2>Что мы строим</h2>
+      <p class="lead" style="margin-top:6px">Открытые распредустройства 220 и&nbsp;110&nbsp;кВ,
+      два автотрансформатора, закрытое РУ&nbsp;10&nbsp;кВ и&nbsp;общеподстанционный пункт управления.</p>
+    </div>
+  </div>
+</section>
+
+<!-- S3 РАЗРЕЗ АТ -->
+<section id="cut" class="h35">
+  <div class="pin bottom">
+    <div class="card" style="max-width:470px">
+      <p class="eyebrow" style="margin-bottom:8px">Сердце объекта</p>
+      <h2 style="font-size:clamp(20px,2.4vw,28px)">Автотрансформатор 125&nbsp;МВА</h2>
+      <p class="lead" style="font-size:15px;margin-top:8px">Активная часть — магнитопровод
+      и&nbsp;обмотки трёх напряжений 220&nbsp;/&nbsp;110&nbsp;/&nbsp;10&nbsp;кВ.
+      Регулирование напряжения — РПН под&nbsp;нагрузкой.</p>
+    </div>
+  </div>
+</section>
+
+<!-- S4 СХЕМА -->
+<section id="scheme" class="h3x">
+  <div class="pin">
+    <div class="split">
+      <svg class="sld" viewBox="0 0 360 640" role="img" aria-label="Однолинейная схема подстанции">
+        <!-- базовая схема -->
+        <g class="base">
+          <path class="wire" id="in1" d="M120 24 V120"/><path class="wire" id="in2" d="M240 24 V120"/>
+          <path class="wire" d="M114 36 L120 24 L126 36" /><path class="wire" d="M234 36 L240 24 L246 36"/>
+          <text x="58" y="18">ВЛ 220 кВ №1</text><text x="248" y="18">№2</text>
+          <line class="busln" id="bus220" x1="40" y1="120" x2="320" y2="120"/>
+          <text x="40" y="110">Шины 220 кВ</text>
+          <!-- ячейки АТ -->
+          <g class="sym">
+            <path d="M120 120 V150"/><rect x="112" y="150" width="16" height="16"/><path d="M120 166 V206"/>
+            <path d="M240 120 V150"/><rect x="232" y="150" width="16" height="16"/><path d="M240 166 V206"/>
+            <circle cx="120" cy="222" r="17"/><circle cx="120" cy="246" r="17"/><circle cx="141" cy="234" r="9"/>
+            <circle cx="240" cy="222" r="17"/><circle cx="240" cy="246" r="17"/><circle cx="261" cy="234" r="9"/>
+            <path d="M120 263 V320"/><path d="M240 263 V320"/>
+          </g>
+          <text x="62" y="236" text-anchor="end">АТ-1</text>
+          <text x="296" y="236">АТ-2</text>
+          <text x="152" y="182">125 МВА</text>
+          <line class="busln" x1="30" y1="320" x2="330" y2="320"/>
+          <text x="30" y="310">Шины 110 кВ</text>
+          <g class="sym" id="fdr">
+            <path d="M60 320 V352"/><rect x="54" y="352" width="12" height="12"/><path d="M60 364 V396"/><path d="M55 386 L60 396 L65 386"/>
+            <path d="M108 320 V352"/><rect x="102" y="352" width="12" height="12"/><path d="M108 364 V396"/><path d="M103 386 L108 396 L113 386"/>
+            <path d="M156 320 V352"/><rect x="150" y="352" width="12" height="12"/><path d="M156 364 V396"/><path d="M151 386 L156 396 L161 386"/>
+            <path d="M204 320 V352"/><rect x="198" y="352" width="12" height="12"/><path d="M204 364 V396"/><path d="M199 386 L204 396 L209 386"/>
+            <path d="M252 320 V352"/><rect x="246" y="352" width="12" height="12"/><path d="M252 364 V396"/><path d="M247 386 L252 396 L257 386"/>
+            <path d="M300 320 V352"/><rect x="294" y="352" width="12" height="12"/><path d="M300 364 V396"/><path d="M295 386 L300 396 L305 386"/>
+          </g>
+          <text x="118" y="420">6 × ВЛ 110 кВ</text>
+          <!-- третичная обмотка → ЗРУ-10 -->
+          <path class="wire" id="t1" d="M150 234 H176 V470 H210"/>
+          <path class="wire" id="t2" d="M270 234 H292 V470 H273"/>
+          <rect class="sym" x="118" y="470" width="124" height="58" rx="8" style="fill:rgba(14,34,64,.9)"/>
+          <text x="180" y="494" text-anchor="middle" style="fill:#F4F8FF;font-size:12px">ЗРУ-10 кВ</text>
+          <text x="180" y="512" text-anchor="middle">2 секции · 10 кВ</text>
+          <text x="180" y="580" text-anchor="middle" style="fill:#4C6E97">Собственные нужды · РЗА · АСУ ТП</text>
+        </g>
+        <!-- анимированные перетоки -->
+        <path class="flow f1" d="M120 24 V120"/><path class="flow f1" d="M240 24 V120"/>
+        <path class="flow f1" d="M40 120 H320"/>
+        <path class="flow f2" d="M120 120 V205"/><path class="flow f2" d="M240 120 V205"/>
+        <path class="flow f2" d="M120 263 V320"/><path class="flow f2" d="M240 263 V320"/>
+        <path class="flow f3" d="M30 320 H330"/>
+        <path class="flow f3" d="M60 320 V396"/><path class="flow f3" d="M156 320 V396"/><path class="flow f3" d="M300 320 V396"/>
+        <path class="flow f4" d="M150 234 H176 V470 H210"/><path class="flow f4" d="M270 234 H292 V470 H273"/>
+      </svg>
+      <div>
+        <p class="eyebrow">Как работает объект</p>
+        <h2>Схема выдачи мощности</h2>
+        <ol class="steps" id="stepList">
+          <li><span class="n">01</span><span><b>Приём 220 кВ</b><small>Две питающие ВЛ&nbsp;220&nbsp;кВ на&nbsp;шины ОРУ-220</small></span></li>
+          <li><span class="n">02</span><span><b>Трансформация</b><small>Два автотрансформатора 125&nbsp;МВА, 220/110/10&nbsp;кВ</small></span></li>
+          <li><span class="n">03</span><span><b>Распределение 110 кВ</b><small>Шесть отходящих ВЛ&nbsp;110&nbsp;кВ потребителям региона</small></span></li>
+          <li><span class="n">04</span><span><b>Сеть 10 кВ</b><small>ЗРУ-10&nbsp;кВ, две секции; собственные нужды и&nbsp;местная нагрузка</small></span></li>
+        </ol>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- S5 ЭТАПЫ -->
+<section id="build" class="h35">
+  <div class="pin bottom">
+    <div class="card phasebox">
+      <p class="eyebrow" style="margin-bottom:6px">График реализации</p>
+      <h2 style="font-size:clamp(20px,2.6vw,30px)">18 месяцев — четыре этапа</h2>
+      <div class="months">Месяц <b id="moNum" style="color:var(--nur)">1</b> из 18</div>
+      <div class="pbar"><i id="pfill"></i></div>
+      <div class="phases" id="phases">
+        <div class="ph"><b>Фундаменты</b><span>мес 1–4</span></div>
+        <div class="ph"><b>Металлоконструкции и здания</b><span>мес 4–9</span></div>
+        <div class="ph"><b>Монтаж оборудования</b><span>мес 8–14</span></div>
+        <div class="ph"><b>Ошиновка и ПНР</b><span>мес 13–18</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- S6 NURA -->
+<section id="nura" class="h2x">
+  <div class="pin">
+    <div>
+      <p class="eyebrow">Исполнитель</p>
+      <h2>Почему NURA EPC</h2>
+      <div class="grid2">
+        <div class="feat"><b>Полный EPC-цикл</b><p>Проектирование, поставка, СМР и&nbsp;ПНР — единая ответственность одного подрядчика за&nbsp;срок, бюджет и&nbsp;качество.</p></div>
+        <div class="feat"><b>Собственное производство</b><p>Шкафы РЗА, АСУ&nbsp;ТП и&nbsp;вторичной коммутации производства NURA&nbsp;ELECTRIC — контроль ключевой номенклатуры.</p></div>
+        <div class="feat"><b>Лицензии и сертификаты</b><p>Полный пакет разрешительной документации на&nbsp;строительство объектов 10–500&nbsp;кВ.</p></div>
+        <div class="feat"><b>Широкая экспертиза</b><p>Подстанции, линии электропередачи, солнечные электростанции и&nbsp;системы накопления энергии (BESS).</p></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- S7 EPC+F -->
+<section id="finance" class="h25">
+  <div class="pin">
+    <div class="card" style="max-width:860px">
+      <p class="eyebrow" style="margin-bottom:6px">Коммерческая структура</p>
+      <h2 style="font-size:clamp(20px,2.6vw,30px)">Формат EPC&nbsp;+&nbsp;F</h2>
+      <svg class="fin" viewBox="0 0 760 290" role="img" aria-label="Схема финансирования EPC+F">
+        <rect class="nbox" x="20"  y="90" width="200" height="74" rx="10"/>
+        <rect class="nbox main" x="280" y="90" width="200" height="74" rx="10"/>
+        <rect class="nbox" x="540" y="90" width="200" height="74" rx="10"/>
+        <text x="120" y="121" text-anchor="middle">Финансирующий</text>
+        <text x="120" y="141" text-anchor="middle">партнёр</text>
+        <text x="380" y="121" text-anchor="middle">NURA EPC</text>
+        <text class="sub" x="380" y="143" text-anchor="middle">генподрядчик · EPC+F</text>
+        <text x="640" y="121" text-anchor="middle">Заказчик</text>
+        <text class="sub" x="640" y="143" text-anchor="middle">владелец объекта</text>
+        <!-- финансирование 85% -->
+        <path class="fl g" d="M220 112 H280"/>
+        <text class="amt" x="250" y="100" text-anchor="middle">85 %</text>
+        <text class="amt" x="250" y="134" text-anchor="middle">41,2 млн USD</text>
+        <!-- объект под ключ -->
+        <path class="fl t" d="M480 112 H540"/>
+        <text class="amt t" x="510" y="100" text-anchor="middle">объект</text>
+        <text class="amt t" x="510" y="134" text-anchor="middle">18 мес</text>
+        <!-- аванс 15% -->
+        <path class="fl e" d="M540 148 H480"/>
+        <text class="amt e" x="510" y="172" text-anchor="middle">аванс 15 %</text>
+        <!-- погашение -->
+        <path class="fl e" d="M640 164 V232 H120 V164"/>
+        <text class="amt e" x="380" y="222" text-anchor="middle">погашение по графику · 7 лет</text>
+      </svg>
+      <ul class="finlist">
+        <li>Аванс заказчика — <b>15 % · 7,3 млн USD</b></li>
+        <li>Финансирование — <b>85 % · 41,2 млн USD</b></li>
+        <li>Срок погашения — <b>7 лет</b></li>
+        <li>Цена и срок — <b>фиксируются EPC-контрактом</b></li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- S8 ФИНАЛ -->
+<section id="final" class="h2x">
+  <div class="pin">
+    <div class="card">
+      <p class="eyebrow" style="margin-bottom:6px">Следующий шаг</p>
+      <h2 style="font-size:clamp(22px,3vw,34px)">Предлагаем перейти к&nbsp;деталям</h2>
+      <p class="lead" style="font-size:16px">NURA&nbsp;EPC готова в&nbsp;течение 30&nbsp;дней представить
+      технико-экономическое обоснование и&nbsp;проект основных условий финансирования (term&nbsp;sheet)
+      по&nbsp;данному объекту.</p>
+      <span class="cta">ТЭО + term sheet — 30 дней</span>
+      <p class="fineprint">NURA GROUP · NURA ELECTRIC · NURA EPC<br>
+      Демонстрационная презентация: все параметры и суммы являются примерными.</p>
+    </div>
+  </div>
+</section>
+
+</main>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/0.158.0/three.min.js"></script>
+<script>
+(function(){
+"use strict";
+var RM = matchMedia('(prefers-reduced-motion: reduce)').matches;
+var stage = document.getElementById('stage');
+var renderer, scene, camera;
+try{
+  renderer = new THREE.WebGLRenderer({antialias:true});
+  renderer.setPixelRatio(Math.min(devicePixelRatio||1,2));
+  renderer.toneMapping=THREE.ACESFilmicToneMapping;
+  renderer.toneMappingExposure=1.25;
+  renderer.localClippingEnabled = true;
+  stage.appendChild(renderer.domElement);
+}catch(e){ document.documentElement.classList.add('no3d'); document.body.classList.add('no3d'); }
+
+/* ============ сцена ============ */
+var G={F:null,S:null,E:null,W:null}; // этапы: фундаменты, металл, оборудование, ошиновка
+var clipPlane = new THREE.Plane(new THREE.Vector3(0,0,1), 12.8);
+var clippedMats=[], cutEdge=null, glowSprites=[], winMat=null, busMats=[], cutLight=null;
+
+function M(c,o){ o=o||{}; return new THREE.MeshStandardMaterial({color:c,roughness:o.r!=null?o.r:.75,metalness:o.m!=null?o.m:.25,side:o.ds?THREE.DoubleSide:THREE.FrontSide,emissive:o.e||0x000000,emissiveIntensity:o.ei!=null?o.ei:1,transparent:!!o.t,opacity:o.o!=null?o.o:1}); }
+var mSteel=M(0x2F4668), mDark=M(0x223754), mTank=M(0x37527A,{r:.55,m:.35}), mConc=M(0x44566E,{r:.9,m:.05}),
+    mPorc=M(0xAEBDD0,{r:.5,m:.1}), mCopper=[M(0xD98A10,{r:.5,m:.6,e:0xFF8A00,ei:.3}),M(0xB4741E,{r:.5,m:.6,e:0xD96F00,ei:.22}),M(0x96601A,{r:.5,m:.6,e:0xB35B00,ei:.16})],
+    mCore=M(0x1B2A40,{r:.6,m:.7}), mWire=M(0x9FB4C8,{r:.4,m:.8}),
+    mBuild=M(0x2A4064,{r:.8,m:.1}), mRoof=M(0x1C3050,{r:.8,m:.2});
+function busMat(){ var m=M(0xC79A4B,{r:.4,m:.8,e:0xFFB02E,ei:.18}); busMats.push(m); return m; }
+
+function box(g,w,h,d,x,y,z,mat){ var m=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),mat||mSteel); m.position.set(x,y+h/2,z); g.add(m); return m; }
+function cylG(rt,rb,h,s){ return new THREE.CylinderGeometry(rt,rb,h,s||14); }
+
+var insGeoCache={};
+function insGeo(r,h){ // ребристая изоляторная колонна (Lathe)
+  var k=r+'_'+h; if(insGeoCache[k]) return insGeoCache[k];
+  var pts=[],n=Math.max(4,Math.round(h/0.42));
+  pts.push(new THREE.Vector2(r*0.55,0));
+  for(var i=0;i<n;i++){var y0=h*i/n,y1=h*(i+0.55)/n,y2=h*(i+1)/n;
+    pts.push(new THREE.Vector2(r,y0+0.02),new THREE.Vector2(r,y1),new THREE.Vector2(r*0.55,y2));}
+  pts.push(new THREE.Vector2(r*0.4,h));
+  return insGeoCache[k]=new THREE.LatheGeometry(pts,12);
+}
+function insCol(g,r,h,x,y,z){ var m=new THREE.Mesh(insGeo(r,h),mPorc); m.position.set(x,y,z); g.add(m); return m; }
+
+function sag(a,b,s,seg){ var pts=[]; seg=seg||10;
+  for(var i=0;i<=seg;i++){var t=i/seg;
+    pts.push(new THREE.Vector3(a.x+(b.x-a.x)*t, a.y+(b.y-a.y)*t - s*4*t*(1-t), a.z+(b.z-a.z)*t));}
+  return new THREE.CatmullRomCurve3(pts);
+}
+function wire(g,a,b,s,r,mat){ var m=new THREE.Mesh(new THREE.TubeGeometry(sag(a,b,s),16,r||0.07,6),mat||mWire); g.add(m); return m; }
+
+function portal(g,x,zHalf,h){ // П-образный портал вдоль z
+  box(g,1,h,1,x,0,-zHalf,mSteel); box(g,1,h,1,x,0,zHalf,mSteel);
+  box(g,1.1,1.1,zHalf*2+1.4,x,h-1.1,0,mSteel);
+}
+function breaker(g,x,z){ // выключатель: рама + 3 колонны с камерами
+  box(g,3.6,0.5,8.4,x,0,z,mConc);
+  for(var p=-1;p<=1;p++){ insCol(g,0.32,3.4,x,0.5,z+p*3);
+    var cap=new THREE.Mesh(new THREE.CapsuleGeometry(0.4,1.6,4,8),mPorc);
+    cap.rotation.z=Math.PI/2; cap.position.set(x,4.3,z+p*3); g.add(cap);}
+}
+function disconnector(g,x,z){ box(g,3,0.4,8.4,x,0,z,mConc);
+  for(var p=-1;p<=1;p++){ insCol(g,0.26,2.6,x-0.9,0.4,z+p*3); insCol(g,0.26,2.6,x+0.9,0.4,z+p*3);
+    box(g,2.2,0.12,0.12,x,3.0,z+p*3,mWire);}
+}
+function ctOrVt(g,x,z){ box(g,2.6,0.4,8.4,x,0,z,mConc);
+  for(var p=-1;p<=1;p++){ insCol(g,0.3,2.8,x,0.4,z+p*3);
+    var hd=new THREE.Mesh(cylG(0.6,0.6,1.1,12),mTank); hd.position.set(x,3.9,z+p*3); g.add(hd);}
+}
+
+function oru(gS,gE,gW,x0,x1,zHalf,h,busH,bays){
+  portal(gS,x0,zHalf,h); portal(gS,x1,zHalf,h);
+  var bus=busMat();
+  for(var p=-1;p<=1;p++){ // шины вдоль z на высоте busH
+    var t=new THREE.Mesh(new THREE.TubeGeometry(sag(
+      new THREE.Vector3((x0+x1)/2+p*2.6,busH,-zHalf),
+      new THREE.Vector3((x0+x1)/2+p*2.6,busH, zHalf),0.7),20,0.09,8),bus);
+    gW.add(t);
+  }
+  for(var b=0;b<bays.length;b++){ var z=bays[b];
+    disconnector(gE,x0+(x1-x0)*0.22,z); breaker(gE,x0+(x1-x0)*0.5,z); ctOrVt(gE,x0+(x1-x0)*0.78,z);
+    for(var p=-1;p<=1;p++) // пофазные ошиновочные пролёты над ячейкой
+      wire(gW,new THREE.Vector3(x0,h-1.1,z+p*3),new THREE.Vector3(x1,h-1.1,z+p*3),1.3,0.055);
+  }
+}
+
+function transformer(gE,x,z,withGuts){
+  var g=new THREE.Group(); g.position.set(x,0,z); gE.add(g);
+  box(g,10,0.5,6.4,0,0,0,mConc); // фундамент-плита (визуально с оборудованием)
+  var shell=new THREE.Group(); g.add(shell);
+  var tm = withGuts ? mTank.clone() : mTank;
+  if(withGuts){ tm.side=THREE.DoubleSide; tm.clippingPlanes=[clipPlane]; clippedMats.push(tm); }
+  var tank=new THREE.Mesh(new THREE.BoxGeometry(9,4.6,4.6),tm); tank.position.y=0.5+2.3; shell.add(tank);
+  var lid=new THREE.Mesh(new THREE.BoxGeometry(9.3,0.3,4.9),tm); lid.position.y=5.0; shell.add(lid);
+  // консерватор
+  var cons=new THREE.Mesh(cylG(0.8,0.8,5.6,14),mTank); cons.rotation.z=Math.PI/2; cons.position.set(0.4,6.1,-1.6); g.add(cons);
+  box(g,0.25,1.0,0.25,-2.0,5.1,-1.6,mSteel);
+  // радиаторы по торцам ±x
+  for(var sx=-1;sx<=1;sx+=2){ var rb=new THREE.Group(); g.add(rb);
+    for(var i=0;i<6;i++) box(rb,0.18,3.6,4.2,sx*(5.1+i*0.32),0.9,0,mDark);
+    box(rb,2.3,0.3,0.3,sx*5.9,4.7,-1.8,mSteel); box(rb,2.3,0.3,0.3,sx*5.9,4.7,1.8,mSteel);
+  }
+  // вводы 220 кВ (высокие) и 110 кВ
+  for(var p=-1;p<=1;p++){
+    var b220=new THREE.Mesh(insGeo(0.3,3.4),mPorc); b220.position.set(-2.4+p*0.01,5.1,p*1.5-0); b220.position.x=-2.4; b220.position.z=p*1.6; g.add(b220);
+    var tip=new THREE.Mesh(cylG(0.16,0.16,0.5,8),mWire); tip.position.set(-2.4,8.8,p*1.6); g.add(tip);
+    var b110=new THREE.Mesh(insGeo(0.24,2.3),mPorc); b110.position.set(2.4,5.1,p*1.6); g.add(b110);
+  }
+  if(withGuts){
+    var guts=new THREE.Group(); guts.position.y=0.8; g.add(guts);
+    // магнитопровод: 3 стержня + ярма
+    for(var i=-1;i<=1;i++){ var limb=new THREE.Mesh(cylG(0.95,0.95,3.0,16),mCore); limb.position.set(i*2.6,2.4,0); guts.add(limb);}
+    box(guts,7.4,0.75,1.9,0,3.9,0,mCore); box(guts,7.4,0.75,1.9,0,0.3,0,mCore);
+    // обмотки: 10 / 110 / 220 кВ концентрически
+    for(var i=-1;i<=1;i++){ var xx=i*2.6;
+      var w1=new THREE.Mesh(cylG(1.15,1.15,2.6,18),mCopper[0]); w1.position.set(xx,2.4,0); guts.add(w1);
+      var w2=new THREE.Mesh(cylG(1.45,1.45,2.75,18),mCopper[1]); w2.position.set(xx,2.4,0); guts.add(w2);
+      var w3=new THREE.Mesh(cylG(1.75,1.75,2.9,18),mCopper[2]); w3.position.set(xx,2.4,0); guts.add(w3);
+    }
+    // РПН
+    var rpn=new THREE.Mesh(new THREE.BoxGeometry(1.0,2.4,1.0),mDark); rpn.position.set(4.0,2.2,0); guts.add(rpn);
+    // свет «нур» внутри бака — разгорается по мере раскрытия
+    cutLight=new THREE.PointLight(0xFFB02E,0,16,1.6); cutLight.position.set(0,3.2,-0.6); guts.add(cutLight);
+    // светящаяся кромка разреза
+    cutEdge=new THREE.Mesh(new THREE.BoxGeometry(9.05,4.65,0.06),
+      new THREE.MeshBasicMaterial({color:0x2DD4E8,transparent:true,opacity:0}));
+    cutEdge.position.set(0,2.8,0); g.add(cutEdge);
+    g.userData.edge=cutEdge;
+  }
+  return g;
+}
+
+function building(gS,x,z,w,d,h,floors){
+  var g=new THREE.Group(); g.position.set(x,0,z); gS.add(g);
+  box(g,w,0.4,d,0,0,0,mConc);
+  box(g,w,h,d,0,0.4,0,mBuild);
+  box(g,w+0.6,0.35,d+0.6,0,h+0.4,0,mRoof);
+  // окна (светятся в финале)
+  if(!winMat){ winMat=M(0x16293F,{e:0xFFD166,ei:0,r:.3,m:.1}); }
+  var rows=floors||1;
+  for(var f=0;f<rows;f++){ var wy=0.4+h*(f+0.55)/rows;
+    var n=Math.floor(w/3);
+    for(var i=0;i<n;i++){ var wx=-w/2+ (i+0.5)*(w/n);
+      var win=new THREE.Mesh(new THREE.BoxGeometry(1.6,1.0,0.1),winMat);
+      win.position.set(wx,wy,d/2+0.06); g.add(win);
+    }
+  }
+  return g;
+}
+
+function glowTex(){
+  var c=document.createElement('canvas'); c.width=c.height=128;
+  var x=c.getContext('2d'), gr=x.createRadialGradient(64,64,2,64,64,62);
+  gr.addColorStop(0,'rgba(255,209,102,1)'); gr.addColorStop(.35,'rgba(255,176,46,.55)');
+  gr.addColorStop(1,'rgba(255,176,46,0)');
+  x.fillStyle=gr; x.fillRect(0,0,128,128);
+  return new THREE.CanvasTexture(c);
+}
+function glow(x,y,z,s){
+  var sp=new THREE.Sprite(new THREE.SpriteMaterial({map:glowT,transparent:true,opacity:0,depthWrite:false,blending:THREE.AdditiveBlending}));
+  sp.position.set(x,y,z); sp.scale.set(s,s,1); scene.add(sp); glowSprites.push(sp);
+}
+
+var glowT;
+function buildScene(){
+  scene=new THREE.Scene();
+  scene.background=new THREE.Color(0x081426);
+  scene.fog=new THREE.FogExp2(0x081426,0.0017);
+  camera=new THREE.PerspectiveCamera(45,1,0.5,1500);
+
+  scene.add(new THREE.HemisphereLight(0x33577F,0x0C1626,1.25));
+  var key=new THREE.DirectionalLight(0xFFE2B0,1.35); key.position.set(90,130,50); scene.add(key);
+  var rim=new THREE.DirectionalLight(0x2DD4E8,0.55); rim.position.set(-100,70,-90); scene.add(rim);
+
+  // земля
+  var ground=new THREE.Mesh(new THREE.CircleGeometry(420,48),M(0x0B1B30,{r:1,m:0}));
+  ground.rotation.x=-Math.PI/2; scene.add(ground);
+  var grid=new THREE.GridHelper(420,42,0x16304F,0x0F2440);
+  grid.material.transparent=true; grid.material.opacity=0.3; grid.position.y=0.02; scene.add(grid);
+  var pad=new THREE.Mesh(new THREE.BoxGeometry(170,0.15,100),M(0x12233C,{r:1,m:0}));
+  pad.position.y=0.075; scene.add(pad);
+
+  // звёзды
+  var sg=new THREE.BufferGeometry(), sp=[];
+  for(var i=0;i<260;i++){ var a=Math.random()*Math.PI*2, r=300+Math.random()*500, y=60+Math.random()*320;
+    sp.push(Math.cos(a)*r,y,Math.sin(a)*r);}
+  sg.setAttribute('position',new THREE.Float32BufferAttribute(sp,3));
+  scene.add(new THREE.Points(sg,new THREE.PointsMaterial({color:0xCFE3FF,size:1.3,transparent:true,opacity:.55,sizeAttenuation:false})));
+
+  // группы этапов
+  for(var k in G){ G[k]=new THREE.Group(); scene.add(G[k]); }
+
+  // фундаменты (этап 1): полосы дорог + площадки
+  box(G.F,150,0.22,7,0,0.1,0,M(0x0E1D31,{r:1,m:0}));
+  box(G.F,7,0.22,80,0,0.1,0,M(0x0E1D31,{r:1,m:0}));
+  box(G.F,26,0.35,16,-5,0.12,0,mConc); // площадка АТ
+
+  // ОРУ-220: x −58…−26, 4 ячейки
+  oru(G.S,G.E,G.W,-58,-26,26,15,11,[-19.5,-6.5,6.5,19.5]);
+  // ОРУ-110: x 18…44, 6 ячеек
+  oru(G.S,G.E,G.W,18,44,27,11,8,[-22.5,-13.5,-4.5,4.5,13.5,22.5]);
+
+  // заходы ВЛ-220 (концевой портал)
+  portal(G.S,-74,14,18);
+  for(var p=-1;p<=1;p++)
+    wire(G.W,new THREE.Vector3(-74,16.6,p*9),new THREE.Vector3(-58,13.8,p*7),2.2,0.07);
+  // связи АТ ↔ ОРУ
+  for(var zt=-1;zt<=1;zt+=2){ var zb=zt*10;
+    for(var p=-1;p<=1;p++){
+      wire(G.W,new THREE.Vector3(-26,13.5,zb+p*3),new THREE.Vector3(-7.4,9.0,zb+p*1.6),1.8,0.06);
+      wire(G.W,new THREE.Vector3(-2.6,7.5,zb+p*1.6),new THREE.Vector3(18,9.6,zb+p*3),1.6,0.06);
+    }
+  }
+  portal(G.S,52,14,12.5);
+  for(var p=-1;p<=1;p++)
+    wire(G.W,new THREE.Vector3(44,9.8,p*8),new THREE.Vector3(52,11.4,p*8),1.4,0.06);
+
+  // трансформаторы
+  transformer(G.E,-5,-10,true);   // АТ-1 — с разрезом
+  transformer(G.E,-5,10,false);   // АТ-2
+
+  // здания
+  building(G.S,2,34,26,11,6,1);     // ЗРУ-10
+  building(G.S,0,-34,20,11,7.4,2);  // ОПУ
+
+  // прожекторное свечение (финал)
+  glowT=glowTex();
+  glow(-58,15.6,26,10); glow(-58,15.6,-26,10); glow(-26,15.6,0,9);
+  glow(18,11.6,27,8); glow(44,11.6,-27,8);
+  glow(-5,9.6,-10,7); glow(-5,9.6,10,7); glow(0,8.6,-34,9); glow(2,7,34,9);
+}
+
+/* ============ выноски ============ */
+var cosEl=document.getElementById('cos'), callouts=[];
+function addCO(scene_,from,to,x,y,z,t1,t2){
+  var d=document.createElement('div'); d.className='co';
+  d.innerHTML='<span class="co-dot"></span><span class="co-tx"><b>'+t1+'</b><i>'+t2+'</i></span>';
+  cosEl.appendChild(d);
+  callouts.push({el:d,sec:scene_,from:from,to:to,p:new THREE.Vector3(x,y,z)});
+}
+addCO('tour',.03,.22, 31,12,0,   'ОРУ-110 кВ','6 линейных ячеек');
+addCO('tour',.20,.38, 2,7.5,34,  'ЗРУ-10 кВ','2 секции · КРУ');
+addCO('tour',.40,.60, -42,16,0,  'ОРУ-220 кВ','4 ячейки · 2 ВЛ');
+addCO('tour',.60,.78, 0,9,-34,   'ОПУ','РЗА и АСУ ТП · NURA ELECTRIC');
+addCO('tour',.78,.97, -5,9.5,-10,'АТ-1, АТ-2','2 × 125 МВА · 220/110/10 кВ');
+addCO('cut',.06,.30,  -7.4,9.8,-10, 'Вводы 220 кВ','высоковольтные изоляторы');
+addCO('cut',.14,.38,  -11.5,3.5,-10,'Радиаторы','система охлаждения');
+addCO('cut',.44,.72,  -5,5.0,-10,   'Магнитопровод','электротехническая сталь');
+addCO('cut',.58,.86,  -2.4,3.6,-9,  'Обмотки','220 / 110 / 10 кВ');
+addCO('cut',.74,.95,  -1,3.4,-10,   'РПН','регулирование под нагрузкой');
+
+/* ============ скролл и камера ============ */
+function $(id){return document.getElementById(id);}
+var secs={}, ids=['hero','kpi','tour','cut','scheme','build','nura','finance','final'];
+ids.forEach(function(i){secs[i]=$(i);});
+var vh=innerHeight, keys=[];
+
+function kf(sec,f,px,py,pz,tx,ty,tz){
+  var el=secs[sec], span=el.offsetHeight-vh;
+  keys.push({y:el.offsetTop+span*f,p:new THREE.Vector3(px,py,pz),t:new THREE.Vector3(tx,ty,tz)});
+}
+function layout(){
+  vh=innerHeight; keys.length=0;
+  kf('hero',0, 158,64,170, 0,10,0);
+  kf('hero',1, 132,56,146, 0,9,0);
+  kf('kpi',.6, 98,48,116, 0,7,0);
+  // облёт (дуга)
+  var R=[88,88,86,84,82,74],H=[34,31,27,23,20,16],A=[38,86,148,210,268,330];
+  var T=[[8,7,0],[2,7,8],[-40,8,0],[-20,7,-8],[0,8,-10],[-5,6,-10]];
+  for(var i=0;i<6;i++){var a=A[i]*Math.PI/180;
+    kf('tour',i/5, Math.cos(a)*R[i],H[i],Math.sin(a)*R[i], T[i][0],T[i][1],T[i][2]);}
+  kf('cut',0, 20,14,-46, -5,5,-10);
+  kf('cut',.45, 9,7.5,-28, -4.8,4.2,-10);
+  kf('cut',1, 4.2,5.8,-20.6, -4.6,3.8,-10);
+  kf('scheme',.5, 16,11,-28, -5,5,-6);
+  kf('build',0, 72,60,74, 0,2,0);
+  kf('build',1, 62,42,66, 0,4,0);
+  kf('nura',.5, -80,30,82, 0,7,0);
+  kf('finance',.5, -100,44,-72, 0,8,0);
+  kf('final',0, 80,32,-98, 0,9,0);
+  kf('final',1, 118,44,-132, 0,10,0);
+  keys.sort(function(a,b){return a.y-b.y;});
+  if(renderer){ renderer.setSize(innerWidth,innerHeight);
+    camera.aspect=innerWidth/innerHeight; camera.updateProjectionMatrix(); }
+  dirty=true;
+}
+
+function sm(t){t=Math.min(1,Math.max(0,t));return t*t*(3-2*t);}
+function secT(id){ var el=secs[id], span=el.offsetHeight-vh;
+  return Math.min(1,Math.max(0,(scrollY-el.offsetTop)/Math.max(1,span))); }
+
+var camP=new THREE.Vector3(158,64,170), camT=new THREE.Vector3(0,10,0),
+    goalP=camP.clone(), goalT=camT.clone(), dirty=true;
+
+function camAt(y){
+  if(y<=keys[0].y){goalP.copy(keys[0].p);goalT.copy(keys[0].t);return;}
+  var last=keys[keys.length-1];
+  if(y>=last.y){goalP.copy(last.p);goalT.copy(last.t);return;}
+  for(var i=0;i<keys.length-1;i++){
+    var a=keys[i],b=keys[i+1];
+    if(y>=a.y&&y<b.y){var t=sm((y-a.y)/(b.y-a.y));
+      goalP.lerpVectors(a.p,b.p,t); goalT.lerpVectors(a.t,b.t,t); return;}
+  }
+}
+
+/* DOM-ссылки на оверлеи */
+var heroBox=$('heroBox'), veil=$('veil'), pfill=$('pfill'), moNum=$('moNum'),
+    phEls=document.querySelectorAll('#phases .ph'),
+    stepEls=document.querySelectorAll('#stepList li'),
+    sld=document.querySelector('.sld');
+
+function stageVis(stage){ // 0..4 — прогресс стройки
+  var arr=[G.F,G.S,G.E,G.W];
+  for(var i=0;i<4;i++){ var v=Math.min(1,Math.max(0,stage-i));
+    var g=arr[i]; g.visible=v>0.02;
+    var s=0.02+0.98*sm(v); g.scale.y=s;
+  }
+}
+var inBuild=false;
+
+function domOnly(){ // обновления интерфейса, не зависящие от 3D
+  var tb=secT('build');
+  if(secs.build.offsetTop<=scrollY+vh && scrollY<=secs.build.offsetTop+secs.build.offsetHeight){
+    moNum.textContent=Math.min(18,Math.max(1,Math.round(1+tb*17)));
+    pfill.style.width=(tb*100).toFixed(1)+'%';
+    var ph=Math.min(3,Math.floor(tb*4));
+    phEls.forEach(function(e,i){e.classList.toggle('on',i<=ph);});
+  }
+  var ts=secT('scheme'); var stepN=Math.min(4,Math.floor(ts*4.6));
+  stepEls.forEach(function(e,i){e.classList.toggle('on',i<stepN);});
+  for(var i=1;i<=4;i++)
+    sld.querySelectorAll('.f'+i).forEach(function(pp){pp.classList.toggle('go',i<=stepN);});
+}
+
+function update(){
+  var y=scrollY;
+  if(renderer) camAt(y);
+  // титул: растворение
+  var th=secT('hero'); heroBox.style.opacity=Math.max(0,1-th*1.6);
+  heroBox.style.transform='translateY('+(-th*40)+'px)';
+  // затемнение сцены под схемами
+  var win=function(t){return sm(t)*(1-sm(Math.max(0,(t-.85)/.15)));};
+  var dim=Math.max(win(secT('scheme')),win(secT('finance')),sm(secT('nura'))*.35);
+  veil.style.opacity=(dim*.62).toFixed(3);
+  if(!renderer){ domOnly(); return; }
+  // разрез
+  var tc=secT('cut'), cut=sm(Math.min(1,Math.max(0,(tc-.28)/.5)));
+  clipPlane.constant=12.8-cut*2.85;
+  if(cutEdge){ cutEdge.position.z=10-clipPlane.constant; // группа АТ-1 стоит в z=−10
+    cutEdge.material.opacity=Math.min(1,cut*(1-cut)*5)*.85; }
+  if(cutLight) cutLight.intensity=cut*2.6;
+  // стройка
+  var tb=secT('build');
+  if(secs.build.offsetTop<=y+vh && y<=secs.build.offsetTop+secs.build.offsetHeight){
+    var st=.25+tb*3.75; stageVis(st); inBuild=true;
+    var mo=Math.min(18,Math.max(1,Math.round(1+tb*17)));
+    moNum.textContent=mo; pfill.style.width=(tb*100).toFixed(1)+'%';
+    var ph=Math.min(3,Math.floor(tb*4));
+    phEls.forEach(function(e,i){e.classList.toggle('on',i<=ph);});
+  } else if(inBuild){ stageVis(4); inBuild=false; }
+  // схема: шаги
+  var ts=secT('scheme'); var stepN=Math.min(4,Math.floor(ts*4.6));
+  stepEls.forEach(function(e,i){e.classList.toggle('on',i<stepN);});
+  for(var i=1;i<=4;i++){
+    sld.querySelectorAll('.f'+i).forEach(function(p){p.classList.toggle('go',i<=stepN);});
+  }
+  // финал: свет
+  var tf=secT('final'), lit=sm(tf*1.4);
+  glowSprites.forEach(function(s){s.material.opacity=lit*.85;});
+  if(winMat) winMat.emissiveIntensity=lit*1.6;
+  busMats.forEach(function(m){m.emissiveIntensity=.18+lit*1.1;});
+  dirty=true;
+}
+
+function projectCOs(){
+  var w=innerWidth,h=innerHeight,v=new THREE.Vector3();
+  callouts.forEach(function(c){
+    var t=secT(c.sec), vis=t>c.from&&t<c.to;
+    if(!vis){c.el.style.opacity=0;return;}
+    v.copy(c.p).project(camera);
+    if(v.z>1){c.el.style.opacity=0;return;}
+    var edge=Math.min((t-c.from)/.06,(c.to-t)/.06,1);
+    c.el.style.opacity=Math.max(0,Math.min(1,edge)).toFixed(2);
+    c.el.style.transform='translate('+((v.x*.5+.5)*w).toFixed(1)+'px,'+((-v.y*.5+.5)*h).toFixed(1)+'px)';
+  });
+}
+
+var running=false;
+function loop(){
+  var k=RM?1:0.085;
+  camP.lerp(goalP,k); camT.lerp(goalT,k);
+  var d=camP.distanceTo(goalP)+camT.distanceTo(goalT);
+  camera.position.copy(camP); camera.lookAt(camT);
+  renderer.render(scene,camera);
+  projectCOs();
+  if(d>0.02||dirty){ dirty=false; requestAnimationFrame(loop); }
+  else running=false;
+}
+function kick(){ if(renderer&&!running){running=true;requestAnimationFrame(loop);} }
+
+if(renderer){
+  buildScene();
+  layout();
+  update();
+  camP.copy(goalP); camT.copy(goalT);
+  addEventListener('scroll',function(){update();kick();},{passive:true});
+  addEventListener('resize',function(){layout();update();kick();});
+  kick();
+} else {
+  // фолбэк без WebGL: оверлеи остаются информативными
+  update();
+  addEventListener('scroll',function(){try{update();}catch(e){}},{passive:true});
+}
+})();
+</script>
