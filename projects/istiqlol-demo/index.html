@@ -504,6 +504,13 @@ var mSteel=M(0x2F4668), mDark=M(0x223754), mTank=M(0x2A4160,{r:.6,m:.3}), mConc=
     mCore=M(0x1B2A40,{r:.6,m:.7}), mWire=M(0x9FB4C8,{r:.4,m:.8}),
     mBuild=M(0x2A4064,{r:.8,m:.1}), mRoof=M(0x1C3050,{r:.8,m:.2});
 function busMat(){ var m=M(0xC79A4B,{r:.4,m:.8,e:0xFFB02E,ei:.18}); busMats.push(m); return m; }
+// фазировка А-В-С (Ж-З-К) — токоведущие части трёх фаз
+var mPh=[M(0xE0B63A,{r:.42,m:.75,e:0xD99A00,ei:.22}),
+         M(0x3FAE77,{r:.42,m:.75,e:0x14A05A,ei:.22}),
+         M(0xD05A4E,{r:.42,m:.75,e:0xB22A1E,ei:.22})];
+busMats.push(mPh[0],mPh[1],mPh[2]);
+var mStripeR=M(0xB5342A,{r:.6,m:.2}), mStripeW=M(0xD8E2EC,{r:.6,m:.2}),
+    mAmber=M(0xB98A2E,{r:.55,m:.4,e:0x8A5E12,ei:.15});
 
 function box(g,w,h,d,x,y,z,mat){ var m=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),mat||mSteel); m.position.set(x,y+h/2,z); g.add(m); return m; }
 function cylG(rt,rb,h,s){ return new THREE.CylinderGeometry(rt,rb,h,s||14); }
@@ -536,8 +543,11 @@ function portal(g,x,zHalf,h){ // портал вдоль z: колонны + р�
     var d=new THREE.Mesh(new THREE.BoxGeometry(0.16,2.1,0.16),mSteel);
     d.position.set(x,h-1.45,z0); d.rotation.x=(i%2?1:-1)*0.62; g.add(d);}
 }
-function mast(g,x,z,h){ // молниеотвод
-  var m=new THREE.Mesh(cylG(0.09,0.42,h,10),mSteel); m.position.set(x,h/2,z); g.add(m);
+function mast(g,x,z,h){ // молниеотвод: красно-белые полосы
+  var seg=6;
+  for(var i=0;i<seg;i++){ var r0=0.42-(0.33*i/seg), r1=0.42-(0.33*(i+1)/seg);
+    var m=new THREE.Mesh(cylG(r1,r0,h/seg,10),(i%2)?mStripeW:mStripeR);
+    m.position.set(x,h*(i+0.5)/seg,z); g.add(m);}
   var sp=new THREE.Mesh(cylG(0.015,0.06,2.4,6),mWire); sp.position.set(x,h+1.2,z); g.add(sp);
 }
 function breaker(g,x,z){ // выключатель: рама + 3 колонны с камерами (r128: цилиндр вместо капсулы)
@@ -557,17 +567,16 @@ function ctOrVt(g,x,z){ box(g,2.6,0.4,8.4,x,0,z,mConc);
 
 function oru(gS,gE,gW,x0,x1,zHalf,h,busH,bays){
   portal(gS,x0,zHalf,h); portal(gS,x1,zHalf,h);
-  var bus=busMat();
-  for(var p=-1;p<=1;p++){ // шины вдоль z на высоте busH
+  for(var p=-1;p<=1;p++){ // шины вдоль z: фазы Ж-З-К
     var t=new THREE.Mesh(new THREE.TubeGeometry(sag(
       new THREE.Vector3((x0+x1)/2+p*2.6,busH,-zHalf),
-      new THREE.Vector3((x0+x1)/2+p*2.6,busH, zHalf),0.7),20,0.09,8),bus);
+      new THREE.Vector3((x0+x1)/2+p*2.6,busH, zHalf),0.7),20,0.09,8),mPh[p+1]);
     gW.add(t);
   }
   for(var b=0;b<bays.length;b++){ var z=bays[b];
     disconnector(gE,x0+(x1-x0)*0.22,z); breaker(gE,x0+(x1-x0)*0.5,z); ctOrVt(gE,x0+(x1-x0)*0.78,z);
-    for(var p=-1;p<=1;p++) // пофазные ошиновочные пролёты над ячейкой
-      wire(gW,new THREE.Vector3(x0,h-1.1,z+p*3),new THREE.Vector3(x1,h-1.1,z+p*3),1.3,0.055);
+    for(var p=-1;p<=1;p++) // пофазные пролёты над ячейкой — в цвет фазы
+      wire(gW,new THREE.Vector3(x0,h-1.1,z+p*3),new THREE.Vector3(x1,h-1.1,z+p*3),1.3,0.055,mPh[p+1]);
   }
 }
 
@@ -591,6 +600,8 @@ function transformer(gE,x,z,withGuts){
   }
   for(var p=-1;p<=1;p++){
     var b220=new THREE.Mesh(insGeo(0.3,3.4),mPorc); b220.position.set(-2.4,5.1,p*1.6); g.add(b220);
+    var ring=new THREE.Mesh(new THREE.TorusGeometry(0.34,0.05,8,16),mPh[p+1]);
+    ring.rotation.x=Math.PI/2; ring.position.set(-2.4,8.45,p*1.6); g.add(ring);
     var tip=new THREE.Mesh(cylG(0.16,0.16,0.5,8),mWire); tip.position.set(-2.4,8.8,p*1.6); g.add(tip);
     var b110=new THREE.Mesh(insGeo(0.24,2.3),mPorc); b110.position.set(2.4,5.1,p*1.6); g.add(b110);
     if(withGuts){ exPart(b220,0,7.6,0); exPart(tip,0,7.6,0); exPart(b110,0,6.2,0); }
@@ -647,8 +658,13 @@ function glow(x,y,z,s){
 
 function buildScene(){
   scene=new THREE.Scene();
-  scene.background=new THREE.Color(0x081426);
-  scene.fog=new THREE.FogExp2(0x081426,0.0017);
+  (function sky(){ var c=document.createElement('canvas'); c.width=2; c.height=512;
+    var x=c.getContext('2d'), gr=x.createLinearGradient(0,0,0,512);
+    gr.addColorStop(0,'#04101F'); gr.addColorStop(.55,'#0A1C36');
+    gr.addColorStop(.78,'#133A58'); gr.addColorStop(1,'#081426');
+    x.fillStyle=gr; x.fillRect(0,0,2,512);
+    scene.background=new THREE.CanvasTexture(c); })();
+  scene.fog=new THREE.FogExp2(0x0B2338,0.0016);
   camera=new THREE.PerspectiveCamera(45,1,0.5,1500);
 
   scene.add(new THREE.HemisphereLight(0x2E4F76,0x0B1524,0.9));
@@ -693,16 +709,16 @@ function buildScene(){
 
   portal(G.S,-74,14,18);
   for(var p=-1;p<=1;p++)
-    wire(G.W,new THREE.Vector3(-74,16.6,p*9),new THREE.Vector3(-58,13.8,p*7),2.2,0.07);
+    wire(G.W,new THREE.Vector3(-74,16.6,p*9),new THREE.Vector3(-58,13.8,p*7),2.2,0.07,mPh[p+1]);
   for(var zt=-1;zt<=1;zt+=2){ var zb=zt*10;
     for(var p=-1;p<=1;p++){
-      wire(G.W,new THREE.Vector3(-26,13.5,zb+p*3),new THREE.Vector3(-7.4,9.0,zb+p*1.6),1.8,0.06);
-      wire(G.W,new THREE.Vector3(-2.6,7.5,zb+p*1.6),new THREE.Vector3(18,9.6,zb+p*3),1.6,0.06);
+      wire(G.W,new THREE.Vector3(-26,13.5,zb+p*3),new THREE.Vector3(-7.4,9.0,zb+p*1.6),1.8,0.06,mPh[p+1]);
+      wire(G.W,new THREE.Vector3(-2.6,7.5,zb+p*1.6),new THREE.Vector3(18,9.6,zb+p*3),1.6,0.06,mPh[p+1]);
     }
   }
   portal(G.S,52,14,12.5);
   for(var p=-1;p<=1;p++)
-    wire(G.W,new THREE.Vector3(44,9.8,p*8),new THREE.Vector3(52,11.4,p*8),1.4,0.06);
+    wire(G.W,new THREE.Vector3(44,9.8,p*8),new THREE.Vector3(52,11.4,p*8),1.4,0.06,mPh[p+1]);
 
   transformer(G.E,-5,-10,true);   // АТ-1 — с разрезом
   transformer(G.E,-5,10,false);   // АТ-2
@@ -710,15 +726,22 @@ function buildScene(){
   building(G.S,2,34,26,11,6,1);     // ЗРУ-10
   building(G.S,0,-34,20,11,7.4,2);  // ОПУ
 
+  // цветовые зоны классов напряжения
+  function zone(x,z,w,d,c){ var m=new THREE.Mesh(new THREE.PlaneGeometry(w,d),
+    new THREE.MeshBasicMaterial({color:c,transparent:true,opacity:0.07}));
+    m.rotation.x=-Math.PI/2; m.position.set(x,0.18,z); scene.add(m); }
+  zone(-42,0,44,62,0xFFB02E);  // ОРУ-220 — золото
+  zone(31,0,34,64,0x2DD4E8);   // ОРУ-110 — бирюза
+  zone(2,34,30,15,0x2EBD85);   // ЗРУ-10 — изумруд
   // молниеотводы и ограждение
   mast(G.S,-72,30,22); mast(G.S,-72,-30,22); mast(G.S,-12,30,20);
   mast(G.S,-12,-30,20); mast(G.S,48,30,18); mast(G.S,48,-30,18);
   (function fence(){ var hx=84,hz=49;
     for(var x=-hx;x<=hx;x+=8){ box(G.F,0.14,1.9,0.14,x,0,-hz,mDark); box(G.F,0.14,1.9,0.14,x,0,hz,mDark); }
     for(var z=-hz+8;z<=hz-8;z+=8){ box(G.F,0.14,1.9,0.14,-hx,0,z,mDark); box(G.F,0.14,1.9,0.14,hx,0,z,mDark); }
-    [0.95,1.7].forEach(function(y){
-      box(G.F,hx*2,0.07,0.07,0,y,-hz,mDark); box(G.F,hx*2,0.07,0.07,0,y,hz,mDark);
-      box(G.F,0.07,0.07,hz*2,-hx,y,0,mDark); box(G.F,0.07,0.07,hz*2,hx,y,0,mDark); });
+    [0.95,1.7].forEach(function(y,yi){ var mr=yi?mAmber:mDark;
+      box(G.F,hx*2,0.07,0.07,0,y,-hz,mr); box(G.F,hx*2,0.07,0.07,0,y,hz,mr);
+      box(G.F,0.07,0.07,hz*2,-hx,y,0,mr); box(G.F,0.07,0.07,hz*2,hx,y,0,mr); });
   })();
   // настройка теней и отражений по всей сцене
   scene.traverse(function(o){ if(o.isMesh){
