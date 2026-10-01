@@ -664,7 +664,7 @@ function buildScene(){
     gr.addColorStop(.78,'#133A58'); gr.addColorStop(1,'#081426');
     x.fillStyle=gr; x.fillRect(0,0,2,512);
     scene.background=new THREE.CanvasTexture(c); })();
-  scene.fog=new THREE.FogExp2(0x0B2338,0.0016);
+  scene.fog=new THREE.FogExp2(0x0C2630,0.0016);
   camera=new THREE.PerspectiveCamera(45,1,0.5,1500);
 
   scene.add(new THREE.HemisphereLight(0x2E4F76,0x0B1524,0.9));
@@ -685,12 +685,38 @@ function buildScene(){
     scene.environment=pm.fromScene(env).texture; pm.dispose();
   }catch(e){}
 
-  var ground=new THREE.Mesh(new THREE.CircleGeometry(420,48),M(0x0B1B30,{r:1,m:0}));
+  // ночные зелёные поля вокруг станции
+  var ground=new THREE.Mesh(new THREE.CircleGeometry(420,48),M(0x0D2115,{r:1,m:0}));
   ground.rotation.x=-Math.PI/2; scene.add(ground);
-  var grid=new THREE.GridHelper(420,42,0x16304F,0x0F2440);
-  grid.material.transparent=true; grid.material.opacity=0.3; grid.position.y=0.02; scene.add(grid);
+  (function fields(){ // лоскутные наделы разных оттенков
+    var tones=[0x0B1D12,0x102818,0x0C241C,0x122C1B,0x091A0F,0x0E2616];
+    var rng=function(a,b){return a+Math.random()*(b-a);};
+    var k=0;
+    for(var ring=0;ring<2;ring++){
+      var n=ring?10:8;
+      for(var i=0;i<n;i++){ var a=(i+(ring?0.5:0))/n*Math.PI*2;
+        var r=ring?265:165, cx=Math.cos(a)*r, cz=Math.sin(a)*r;
+        if(Math.abs(cx)<105&&Math.abs(cz)<70) continue; // не под площадкой
+        var f=new THREE.Mesh(new THREE.PlaneGeometry(rng(55,95),rng(40,70)),
+          new THREE.MeshStandardMaterial({color:tones[k++%tones.length],roughness:1,metalness:0}));
+        f.rotation.x=-Math.PI/2; f.rotation.z=a+rng(-.3,.3);
+        f.position.set(cx,0.04+k*0.004,cz); f.receiveShadow=true; scene.add(f);
+      }
+    }
+    // лесополосы — купы тёмной зелени по дальнему периметру
+    var mTree=new THREE.MeshStandardMaterial({color:0x0C2113,roughness:.95,metalness:0});
+    for(var i=0;i<46;i++){ var a=Math.random()*Math.PI*2, r=rng(150,300);
+      var cx=Math.cos(a)*r, cz=Math.sin(a)*r;
+      if(Math.abs(cx)<110&&Math.abs(cz)<75) continue;
+      var tr=new THREE.Mesh(new THREE.SphereGeometry(rng(1.6,3.4),7,5),mTree);
+      tr.position.set(cx,tr.geometry.parameters.radius*0.7,cz);
+      tr.scale.y=rng(.8,1.25); scene.add(tr);
+    }
+  })();
   var pad=new THREE.Mesh(new THREE.BoxGeometry(170,0.15,100),M(0x12233C,{r:1,m:0}));
-  pad.position.y=0.075; scene.add(pad);
+  pad.position.y=0.075; pad.receiveShadow=true; scene.add(pad);
+  var road=new THREE.Mesh(new THREE.BoxGeometry(8,0.12,120),M(0x1A2634,{r:1,m:0}));
+  road.position.set(0,0.06,110); scene.add(road); // подъездная дорога
 
   var sg=new THREE.BufferGeometry(), sp=[];
   for(var i=0;i<260;i++){ var a=Math.random()*Math.PI*2, r=300+Math.random()*500, y=60+Math.random()*320;
