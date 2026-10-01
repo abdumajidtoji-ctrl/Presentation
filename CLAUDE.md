@@ -35,6 +35,16 @@ EPC+F). Владелец — руководитель отдела продаж 
   ScrollTrigger (скролл-режиссура), DrawSVGPlugin (отрисовка схем),
   SplitText (анимация заголовков), MotionPathPlugin (поток энергии),
   ScrollSmoother, Flip, MorphSVG и др.
+- `chartjs/` — Chart.js 4.5.1 (графики; нужен скиллу slides);
+- `fonts/` — фирменная типографика с кириллицей (RU/EN/UZ), variable
+  woff2: Inter (текст), Manrope (заголовки), Playfair Display (акцент);
+  подключать `fonts/fonts.css`;
+- `d3/` + `geo/` — D3 7.9 + topojson-client + контуры стран world-atlas
+  (слайды «география проектов», трассы ЛЭП; Узбекистан — id "860");
+- `icons/lucide/` — иконки Lucide (~1600): `icon-nodes.json` для сборки
+  инлайн-SVG, `tags.json` для поиска;
+- `three/addons/` — GLTFLoader (3D-модели от проектировщиков),
+  UnrealBloomPass + EffectComposer (свечение, постобработка).
 
 Также объявлены в `package.json`; `npm install` ставит их в `node_modules`
 (реестр npm в этой среде доступен).

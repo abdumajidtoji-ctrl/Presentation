@@ -31,3 +31,34 @@ DrawSVG + SplitText + MotionPath — рабочие.
 
 Нужен скиллу slides (графики в HTML-презентациях). Проверен рендером
 в Chromium этой среды.
+
+## fonts/ — фирменная типографика (@fontsource, OFL)
+
+Variable-шрифты woff2 c кириллицей и латиницей (RU/EN/UZ):
+- `inter/` — Inter (основной текст, wght 100–900);
+- `manrope/` — Manrope (заголовки, цифры, wght 200–800);
+- `playfair/` — Playfair Display (акцентные serif-заголовки, wght 400–900).
+Подключение: `fonts/fonts.css` (@font-face с unicode-range).
+
+## d3/ + geo/ — карты (npm d3 7.9, topojson-client 3.1, world-atlas 2.0.2)
+
+- `d3/d3.min.js`, `d3/topojson-client.min.js` — UMD;
+- `geo/countries-110m.json` — контуры стран (обзорные карты);
+- `geo/countries-50m.json` — детальнее (крупные планы).
+Узбекистан: id "860" (ISO numeric). Проверено картой Центральной Азии.
+
+## icons/lucide/ — иконки Lucide 1.49 (ISC)
+
+- `icon-nodes.json` — вектор-данные всех ~1600 иконок (тег+атрибуты);
+  из него собирается инлайн-SVG любой иконки (viewBox 0 0 24 24,
+  stroke-width 2, fill none);
+- `sprite.svg` — спрайт для <use>; `tags.json` — поиск по ключевым словам.
+
+## three/addons/ — дополнения Three.js r128
+
+- `GLTFLoader.js`, `RGBELoader.js` — загрузка 3D-моделей (glTF) и HDR-окружения;
+- `EffectComposer/RenderPass/ShaderPass/MaskPass` + `UnrealBloomPass` +
+  `CopyShader/LuminosityHighPassShader/FXAAShader` — постобработка:
+  свечение (корона на изоляторах, огни), сглаживание.
+Порядок подключения скриптов: шейдеры → EffectComposer → пассы.
+Проверено рендером bloom-эффекта.
