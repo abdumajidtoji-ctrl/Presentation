@@ -1,0 +1,926 @@
+<title>ПС NIM 110 кВ — кейс NURA</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@600;700;800&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<style>
+/* Кейс реализованного объекта: дневной «цифровой двойник» NIM + реальные фото.
+   UI — фирменная тёмная рамка NURA поверх дневной сцены. */
+:root{
+  --night:#081426; --deep:#0E2240; --steel:#1E3A5F;
+  --white:#F4F8FF; --muted:#93A5BC; --ink:#122033;
+  --nur:#FFB02E; --nur-bright:#FFD166; --turq:#2DD4E8; --emerald:#2EBD85;
+  --font-d:"Manrope",system-ui,sans-serif;
+  --font-b:"Inter",system-ui,sans-serif;
+  --font-m:"IBM Plex Mono",ui-monospace,monospace;
+  color-scheme:dark;
+}
+html{scroll-behavior:auto}
+body{margin:0;background:var(--night);color:var(--white);font-family:var(--font-b);
+  font-size:16px;line-height:1.55;overflow-x:hidden}
+#stage{position:fixed;inset:0;z-index:0}
+#stage canvas{display:block;width:100%;height:100%}
+/* фотослои */
+.fx{position:fixed;inset:0;z-index:1;pointer-events:none;opacity:0;
+  background-size:cover;background-position:center}
+#vign{position:fixed;inset:0;pointer-events:none;z-index:2;
+  background:radial-gradient(ellipse at 50% 45%, transparent 58%, rgba(6,12,24,.42) 100%)}
+#cos{position:fixed;inset:0;pointer-events:none;z-index:3}
+.no3d #stage,.no3d #cos{display:none}
+
+#progress{position:fixed;left:0;right:0;top:env(safe-area-inset-top,0px);height:3px;z-index:7;
+  background:rgba(10,22,40,.45)}
+#progress i{display:block;height:100%;width:0;
+  background:linear-gradient(90deg,var(--nur),var(--nur-bright));
+  box-shadow:0 0 10px rgba(255,176,46,.8)}
+#dots{position:fixed;right:18px;top:50%;transform:translateY(-50%);z-index:7;
+  display:flex;flex-direction:column;gap:12px}
+#dots button{all:unset;cursor:pointer;width:9px;height:9px;border-radius:50%;
+  background:rgba(18,32,51,.55);border:1px solid rgba(244,248,255,.5);transition:all .3s;position:relative}
+#dots button:hover,#dots button:focus-visible{background:var(--turq)}
+#dots button:focus-visible{outline:2px solid var(--turq);outline-offset:3px}
+#dots button.on{background:var(--nur);border-color:var(--nur);box-shadow:0 0 10px rgba(255,176,46,.9)}
+#dots button span{position:absolute;right:20px;top:50%;transform:translateY(-50%);
+  font-family:var(--font-m);font-size:11px;color:var(--white);white-space:nowrap;
+  background:rgba(10,22,40,.92);border:1px solid rgba(45,212,232,.25);border-radius:6px;
+  padding:3px 9px;opacity:0;pointer-events:none;transition:opacity .25s}
+#dots button:hover span,#dots button:focus-visible span{opacity:1}
+@media (max-width:900px){#dots{display:none}}
+
+#loader{position:fixed;inset:0;z-index:9;background:var(--night);display:flex;
+  flex-direction:column;align-items:center;justify-content:center;gap:26px;transition:opacity .6s}
+#loader.off{opacity:0;pointer-events:none}
+#loader .lw{font-family:var(--font-d);font-weight:700;font-size:22px;letter-spacing:.34em;color:var(--white)}
+#loader .lw b{color:var(--nur)}
+#loader .lb{width:180px;height:2px;background:rgba(30,58,95,.8);overflow:hidden;border-radius:1px}
+#loader .lb i{display:block;height:100%;width:40%;border-radius:1px;
+  background:linear-gradient(90deg,var(--nur),var(--nur-bright));
+  box-shadow:0 0 8px rgba(255,176,46,.8)}
+@media (prefers-reduced-motion:no-preference){#loader .lb i{animation:lload 1.1s ease-in-out infinite}
+  @keyframes lload{0%{transform:translateX(-120%)}100%{transform:translateX(420%)}}}
+
+#smooth-wrapper{position:relative;z-index:4}
+main{position:relative}
+section{position:relative}
+.h15{height:150vh}.h2x{height:200vh}.h3x{height:300vh}.h35{height:350vh}
+.pin{height:100vh;display:flex;flex-direction:column;justify-content:center;
+  box-sizing:border-box;padding:24px min(6vw,72px)}
+.pin.top{justify-content:flex-start;padding-top:min(10vh,96px)}
+.pin.bottom{justify-content:flex-end;padding-bottom:min(9vh,88px)}
+.nogsap .pin{position:sticky;top:0}
+
+.card{background:rgba(10,22,40,.82);backdrop-filter:blur(10px);
+  border:1px solid rgba(45,212,232,.18);border-radius:14px;padding:22px 26px}
+.eyebrow{font-family:var(--font-m);font-size:12px;letter-spacing:.22em;
+  text-transform:uppercase;color:var(--turq);margin:0 0 14px;
+  text-shadow:0 1px 8px rgba(6,12,24,.8)}
+h1,h2{font-family:var(--font-d);text-wrap:balance;margin:0;
+  text-shadow:0 2px 18px rgba(6,12,24,.55)}
+h1{font-size:clamp(30px,5.2vw,60px);font-weight:800;line-height:1.08;letter-spacing:-.015em}
+h2{font-size:clamp(24px,3.4vw,38px);font-weight:700;letter-spacing:-.01em;margin-bottom:14px}
+.lead{font-size:clamp(16px,1.6vw,19px);color:#DAE4F2;max-width:56ch;margin:14px 0 0;
+  text-shadow:0 1px 10px rgba(6,12,24,.7)}
+.goldline{width:64px;height:3px;border-radius:2px;margin:18px 0 0;transform-origin:left center;
+  background:linear-gradient(90deg,var(--nur),var(--nur-bright));
+  box-shadow:0 0 14px rgba(255,176,46,.55)}
+.brand{font-family:var(--font-d);font-weight:700;letter-spacing:.3em;font-size:13px;color:var(--white);
+  text-shadow:0 1px 10px rgba(6,12,24,.8)}
+.brand b{color:var(--nur)}
+.badge{display:inline-block;font-family:var(--font-m);font-size:11px;letter-spacing:.08em;
+  color:var(--nur-bright);border:1px solid rgba(255,176,46,.55);border-radius:999px;
+  padding:4px 12px;margin-top:20px;background:rgba(10,22,40,.6)}
+.scroll-hint{position:absolute;left:50%;bottom:26px;transform:translateX(-50%);
+  font-family:var(--font-m);font-size:11px;letter-spacing:.2em;color:#DAE4F2;
+  text-transform:uppercase;text-align:center;text-shadow:0 1px 8px rgba(6,12,24,.8)}
+.scroll-hint::after{content:"";display:block;width:1px;height:34px;margin:10px auto 0;
+  background:linear-gradient(180deg,var(--nur),transparent)}
+@media (prefers-reduced-motion:no-preference){
+  .scroll-hint::after{animation:drop 1.8s ease-in-out infinite}
+  @keyframes drop{0%{transform:scaleY(.2);transform-origin:top}55%{transform:scaleY(1)}100%{opacity:0;transform:scaleY(1)}}
+}
+
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(168px,1fr));gap:14px;margin-top:26px}
+.kpi{background:rgba(10,22,40,.84);border:1px solid rgba(45,212,232,.18);border-radius:12px;
+  padding:18px 18px 15px}
+.kpi .v{font-family:var(--font-m);font-weight:600;font-size:clamp(25px,2.8vw,34px);
+  font-variant-numeric:tabular-nums;color:var(--nur);
+  text-shadow:0 0 22px rgba(255,176,46,.4);white-space:nowrap}
+.kpi .v small{font-size:.52em;color:var(--nur-bright);font-weight:500}
+.kpi .l{font-size:13px;color:var(--muted);margin-top:6px;line-height:1.35}
+
+/* выноски — чипы, читаемые на дневной сцене */
+.co{position:absolute;left:0;top:0;opacity:0;will-change:transform,opacity}
+.co-dot{position:absolute;left:-5px;top:-5px;width:10px;height:10px;border-radius:50%;
+  background:var(--nur);box-shadow:0 0 12px rgba(255,176,46,.95),0 0 3px #fff inset}
+.co-tx{position:absolute;left:14px;bottom:10px;white-space:nowrap;
+  background:rgba(10,22,40,.88);border:1px solid rgba(255,176,46,.4);
+  border-radius:9px;padding:6px 11px}
+.co-tx b{display:block;font-family:var(--font-d);font-weight:700;font-size:14px}
+.co-tx i{display:block;font-style:normal;font-family:var(--font-m);font-size:11px;color:var(--turq)}
+
+/* фото-глава */
+.photocap{max-width:560px}
+.photocap .n{font-family:var(--font-m);color:var(--nur);font-size:12px;letter-spacing:.18em}
+.photocap h3{font-family:var(--font-d);font-size:clamp(20px,2.6vw,30px);font-weight:700;
+  margin:8px 0 6px;text-shadow:0 2px 16px rgba(6,12,24,.7)}
+.photocap p{margin:0;color:#DAE4F2;font-size:15px;text-shadow:0 1px 10px rgba(6,12,24,.8)}
+
+/* оборудование */
+.eqgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:14px;margin-top:24px}
+.eq{background:rgba(10,22,40,.85);border:1px solid rgba(45,212,232,.18);border-radius:14px;
+  overflow:hidden;min-width:0}
+.eq img{width:100%;aspect-ratio:4/3;object-fit:cover;display:block}
+.eq .t{padding:12px 14px 14px}
+.eq b{display:block;font-family:var(--font-d);font-size:15px;font-weight:700}
+.eq span{font-family:var(--font-m);font-size:11px;color:var(--turq)}
+.catlink{display:inline-block;margin-top:18px;font-family:var(--font-d);font-weight:700;
+  color:#1A1200;background:linear-gradient(135deg,var(--nur),var(--nur-bright));
+  padding:11px 22px;border-radius:10px;text-decoration:none;
+  box-shadow:0 0 24px rgba(255,176,46,.45)}
+
+/* этапы */
+.phasebox{max-width:1060px;width:100%;padding:13px 20px 12px;background:rgba(10,22,40,.8);
+  backdrop-filter:blur(10px);border:1px solid rgba(45,212,232,.18);border-radius:14px}
+.bld-head{display:flex;align-items:baseline;gap:20px;flex-wrap:wrap}
+.bld-head h2{font-size:clamp(16px,1.5vw,20px);margin:0}
+.months{font-family:var(--font-m);font-size:12px;color:var(--turq);margin-left:auto}
+.pbar{height:4px;border-radius:2px;background:rgba(30,58,95,.8);margin:10px 0;overflow:hidden}
+.pbar i{display:block;height:100%;width:0;border-radius:2px;
+  background:linear-gradient(90deg,var(--nur),var(--nur-bright));
+  box-shadow:0 0 10px rgba(255,176,46,.7)}
+.phases{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.ph{display:flex;justify-content:space-between;align-items:baseline;gap:8px;
+  padding:7px 11px;border-radius:8px;border:1px solid rgba(45,212,232,.14);
+  background:rgba(14,34,64,.6);color:var(--muted);transition:all .35s;min-width:0}
+.ph b{font-family:var(--font-d);font-size:12.5px;font-weight:700;color:inherit;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ph span{font-family:var(--font-m);font-size:10.5px;flex:none}
+.ph.on{color:var(--white);border-color:rgba(255,176,46,.5);background:rgba(255,176,46,.12)}
+.ph.on span{color:var(--nur)}
+
+.rail{max-width:470px}
+.feats{display:flex;flex-direction:column;gap:22px;margin-top:30px}
+.feat{border-left:2px solid rgba(45,212,232,.7);padding:2px 0 3px 16px;
+  background:linear-gradient(90deg,rgba(10,22,40,.72),rgba(10,22,40,0));border-radius:2px}
+.feat b{display:block;font-family:var(--font-d);font-size:16.5px;font-weight:700;margin-bottom:5px}
+.feat p{margin:0;color:#D5DFEE;font-size:14px;max-width:44ch}
+#scrim{position:fixed;inset:0;pointer-events:none;z-index:2;opacity:0;
+  background:linear-gradient(90deg,rgba(7,14,27,.88) 0%,rgba(7,14,27,.66) 30%,rgba(7,14,27,.25) 52%,transparent 68%)}
+@media (max-width:760px){#scrim{background:rgba(7,14,27,.62)}}
+
+#final .card{max-width:560px;background:rgba(8,16,30,.72)}
+.fineprint{margin-top:20px;font-size:11.5px;color:var(--muted);font-family:var(--font-m);line-height:1.8}
+
+@media (max-width:760px){
+  .pin{padding:18px 16px}
+  .card{padding:18px}
+  .phases{grid-template-columns:1fr 1fr}
+  .co-tx b{font-size:12.5px}.co-tx i{font-size:10px}
+  .kpi .v{font-size:23px}
+}
+</style>
+
+<div id="stage"></div>
+<div class="fx" id="fxHero" style="background-image:url(photos/site/01.jpg)"></div>
+<div class="fx" id="fxGal"></div>
+<div class="fx" id="fxFinal" style="background-image:url(photos/transformer/07.jpg)"></div>
+<div id="scrim"></div>
+<div id="vign"></div>
+<div id="cos"></div>
+<div id="progress"><i id="pgfill"></i></div>
+<nav id="dots" aria-label="Разделы"></nav>
+<div id="loader"><div class="lw">NURA <b>GROUP</b></div><div class="lb"><i></i></div></div>
+
+<div id="smooth-wrapper"><div id="smooth-content">
+<main>
+
+<!-- S0 ТИТУЛ: реальное фото → растворение в цифровой двойник -->
+<section id="hero" class="h2x" data-nav="Титул">
+  <div class="pin">
+    <div id="heroBox" style="max-width:760px">
+      <div class="brand">NURA <b>GROUP</b> · NURA ELECTRIC · UET CONSTRUCTION</div>
+      <h1 id="heroTitle" style="margin-top:26px">Цифровая подстанция<br>NIM 110 кВ</h1>
+      <p class="lead" id="heroLead">Реализованный проект: Улугнорский район, Андижанская
+      область. Листайте — реальный объект превратится в&nbsp;цифровой двойник.</p>
+      <div class="goldline" id="heroLine"></div>
+      <span class="badge">РЕАЛИЗОВАННЫЙ ПРОЕКТ · ФОТО С ОБЪЕКТА</span>
+    </div>
+    <div class="scroll-hint" id="hint">Листайте</div>
+  </div>
+</section>
+
+<!-- S1 КПЭ -->
+<section id="kpi" class="h15" data-nav="Параметры">
+  <div class="pin">
+    <div>
+      <p class="eyebrow">Паспорт проекта</p>
+      <h2>Главные параметры</h2>
+      <div class="kpis" id="kpis">
+        <div class="kpi"><div class="v"><span data-count="80">80</span> <small>МВА</small></div><div class="l">Два трансформатора CHINT по 40 МВА, 110/10 кВ</div></div>
+        <div class="kpi"><div class="v"><span data-count="7.2" data-dec="1">7,2</span> <small>млн $</small></div><div class="l">Стоимость проекта под ключ</div></div>
+        <div class="kpi"><div class="v"><span data-count="17.6" data-dec="1">17,6</span> <small>км</small></div><div class="l">Линия электропередачи 110 кВ до объекта</div></div>
+        <div class="kpi"><div class="v"><span data-count="36">36</span> <small>млн кВт·ч</small></div><div class="l">Годовой отпуск электроэнергии</div></div>
+        <div class="kpi"><div class="v"><span data-count="400">400</span><small>+</small></div><div class="l">Новых рабочих мест в районе</div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- S2 ОБЛЁТ ДВОЙНИКА -->
+<section id="tour" class="h35" data-nav="Цифровой двойник">
+  <div class="pin top">
+    <div id="tourBox" style="max-width:520px">
+      <p class="eyebrow">Цифровой двойник</p>
+      <h2>Компоновка объекта</h2>
+      <p class="lead" style="margin-top:6px">Модель построена по&nbsp;аэрофотосъёмке:
+      блочно-модульные ЗРУ, два силовых трансформатора, ОРУ-110&nbsp;кВ.</p>
+    </div>
+  </div>
+</section>
+
+<!-- S3 РАЗРЕЗ -->
+<section id="cut" class="h3x" data-nav="Разрез АТ">
+  <div class="pin bottom">
+    <div class="card" style="max-width:470px">
+      <p class="eyebrow" style="margin-bottom:8px">Сердце объекта</p>
+      <h2 style="font-size:clamp(20px,2.4vw,28px)">Трансформатор CHINT 40 МВА</h2>
+      <p class="lead" style="font-size:15px;margin-top:8px">Активная часть — магнитопровод
+      и&nbsp;обмотки 110&nbsp;/&nbsp;10&nbsp;кВ, РПН. Система охлаждения —
+      радиаторы с&nbsp;принудительным обдувом.</p>
+    </div>
+  </div>
+</section>
+
+<!-- S4 ФОТО-ГЛАВА -->
+<section id="gallery" class="h3x" data-nav="Фото объекта">
+  <div class="pin bottom">
+    <div class="photocap" id="galCap">
+      <div class="n" id="galN">01 / 03</div>
+      <h3 id="galT">Монтаж ОРУ-110 кВ</h3>
+      <p id="galP">Апрель 2025: установка разъединителей и выключателей, монтаж ошиновки.</p>
+    </div>
+  </div>
+</section>
+
+<!-- S5 ОБОРУДОВАНИЕ -->
+<section id="equip" class="h2x" data-nav="Оборудование">
+  <div class="pin">
+    <div>
+      <p class="eyebrow">Основное оборудование</p>
+      <h2>Что установлено на объекте</h2>
+      <div class="eqgrid" id="eqgrid">
+        <div class="eq"><img loading="lazy" src="photos/transformer/01.jpg" alt="Трансформатор CHINT"><div class="t"><b>Трансформатор 40 МВА</b><span>CHINT · 110/10 кВ · 2 шт.</span></div></div>
+        <div class="eq"><img loading="lazy" src="photos/breaker/02.jpg" alt="Выключатели 110 кВ"><div class="t"><b>Выключатели элегазовые</b><span>110 кВ · колонковые</span></div></div>
+        <div class="eq"><img loading="lazy" src="photos/disconnector/06.jpg" alt="Разъединители 110 кВ"><div class="t"><b>Разъединители 110 кВ</b><span>двухколонковые · с ЗН</span></div></div>
+        <div class="eq"><img loading="lazy" src="photos/zru/01.jpg" alt="ЗРУ NURA"><div class="t"><b>Блочно-модульные ЗРУ</b><span>КРУ 10 кВ · РЗА · NURA Electric</span></div></div>
+      </div>
+      <a class="catlink" href="https://claude.ai/artifact/H4erq3mGKkKMFh3i57MfQq" target="_blank" rel="noopener">Полный каталог техники — все ракурсы →</a>
+    </div>
+  </div>
+</section>
+
+<!-- S6 ЭТАПЫ -->
+<section id="build" class="h3x" data-nav="Ход строительства">
+  <div class="pin bottom">
+    <div class="card phasebox">
+      <div class="bld-head">
+        <h2>Ход реализации</h2>
+        <div class="months">Этап <b id="moNum" style="color:var(--nur)">1</b> из 4</div>
+      </div>
+      <div class="pbar"><i id="pfill"></i></div>
+      <div class="phases" id="phases">
+        <div class="ph"><b>Фундаменты и стена</b><span>I</span></div>
+        <div class="ph"><b>Модули ЗРУ и металл</b><span>II</span></div>
+        <div class="ph"><b>Монтаж оборудования</b><span>III</span></div>
+        <div class="ph"><b>Ошиновка и ПНР</b><span>IV</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- S7 NURA -->
+<section id="nura" class="h2x" data-nav="Команда проекта">
+  <div class="pin">
+    <div class="rail">
+      <p class="eyebrow">Команда проекта</p>
+      <h2>Кто построил</h2>
+      <div class="feats" id="feats">
+        <div class="feat"><b>NURA Electric — электротехническая часть</b><p>КРУ 10 кВ, шкафы РЗА и вторичной коммутации собственного производства; монтаж и наладка первичного оборудования.</p></div>
+        <div class="feat"><b>UET Construction — генеральный подряд</b><p>Строительная часть: фундаменты, блочно-модульные здания, инфраструктура площадки.</p></div>
+        <div class="feat"><b>Заказчик — Hududiy Elektr Tarmoqlari</b><p>Региональные электрические сети Республики Узбекистан, Андижанская область.</p></div>
+        <div class="feat"><b>Цифровая подстанция</b><p>Микропроцессорные защиты, цифровые измерения, дистанционное управление — стандарт NURA для новых объектов.</p></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- S8 ФИНАЛ -->
+<section id="final" class="h2x" data-nav="Следующий проект">
+  <div class="pin">
+    <div class="card">
+      <p class="eyebrow" style="margin-bottom:6px">Следующий проект — ваш</p>
+      <h2 id="finalTitle" style="font-size:clamp(22px,3vw,34px)">Построим такой же объект для вас</h2>
+      <p class="lead" style="font-size:16px">Подстанции 10–500 кВ, ЛЭП, солнечная генерация
+      и&nbsp;накопители — проектирование, производство, строительство
+      и&nbsp;финансирование в&nbsp;одном контракте.</p>
+      <p class="fineprint">NURA GROUP · NURA ELECTRIC · NURA EPC<br>
+      Фотоматериалы — объект ПС NIM 110 кВ, Андижанская область.</p>
+    </div>
+  </div>
+</section>
+
+</main>
+</div></div>
+
+<script src="vendor/three.min.js"></script>
+<script src="vendor/gsap.min.js"></script>
+<script src="vendor/ScrollTrigger.min.js"></script>
+<script src="vendor/ScrollSmoother.min.js"></script>
+<script src="vendor/SplitText.min.js"></script>
+<script src="vendor/CustomEase.min.js"></script>
+<script>
+(function(){
+"use strict";
+var RM = matchMedia('(prefers-reduced-motion: reduce)').matches;
+var hasG = !!(window.gsap && window.ScrollTrigger);
+if(hasG){
+  gsap.registerPlugin(ScrollTrigger);
+  if(window.ScrollSmoother) gsap.registerPlugin(ScrollSmoother);
+  if(window.SplitText) gsap.registerPlugin(SplitText);
+  if(window.CustomEase){ gsap.registerPlugin(CustomEase); CustomEase.create("nura","M0,0 C0.22,0.62 0.3,1 1,1"); }
+}else{ document.documentElement.classList.add('nogsap'); }
+var EASE=(hasG&&window.CustomEase)?"nura":"power3.out";
+
+var stage=document.getElementById('stage');
+var HQ = innerWidth>760;
+var renderer, scene, camera;
+try{
+  renderer=new THREE.WebGLRenderer({antialias:true});
+  renderer.setPixelRatio(Math.min(devicePixelRatio||1,HQ?2:1.5));
+  renderer.toneMapping=THREE.ACESFilmicToneMapping;
+  renderer.toneMappingExposure=0.95;
+  renderer.localClippingEnabled=true;
+  if(HQ){ renderer.shadowMap.enabled=true; renderer.shadowMap.type=THREE.PCFSoftShadowMap; }
+  stage.appendChild(renderer.domElement);
+}catch(e){ document.documentElement.classList.add('no3d'); document.body.classList.add('no3d'); }
+
+/* ================= ДНЕВНАЯ СЦЕНА NIM (по аэрофотосъёмке) ================= */
+var G={F:null,S:null,E:null,W:null};
+var clipPlane=new THREE.Plane(new THREE.Vector3(0,0,1),16.2);
+var cutEdge=null,cutLight=null,exParts=[];
+function exPart(o,dx,dy,dz){exParts.push({o:o,b:o.position.clone(),d:new THREE.Vector3(dx,dy,dz)});}
+
+function M(c,o){o=o||{};return new THREE.MeshStandardMaterial({color:c,
+  roughness:o.r!=null?o.r:.82,metalness:o.m!=null?o.m:.12,
+  side:o.ds?THREE.DoubleSide:THREE.FrontSide,emissive:o.e||0x000000,
+  emissiveIntensity:o.ei!=null?o.ei:1,transparent:!!o.t,opacity:o.o!=null?o.o:1});}
+/* материалы с реальных фото */
+var mGalv=M(0xB9BFC6,{r:.45,m:.6}),      // оцинковка на солнце
+    mGalvD=M(0x8E959C,{r:.5,m:.5}),
+    mConc=M(0xA6ABB1,{r:.95,m:.02}),      // бетон фундаментов
+    mWallC=M(0xAFB5BC,{r:.92,m:.02}),     // стена периметра
+    mTank=M(0xCBD1D6,{r:.55,m:.35}),      // бак CHINT светло-серый
+    mPorc=M(0x3E2B24,{r:.6,m:.08}),       // фарфор тёмно-коричневый
+    mPorcL=M(0xE8EBEE,{r:.5,m:.1}),       // белые аппаратные покрышки
+    mCopper=[M(0xC98A2E,{r:.45,m:.65,e:0xFF8A00,ei:.05}),M(0xA8762E,{r:.45,m:.65,e:0xD96F00,ei:.04})],
+    mCore=M(0x45566B,{r:.55,m:.6}),
+    mWire=M(0x7D838A,{r:.4,m:.7}),        // провод АС
+    mPanel=M(0xEDF0F3,{r:.85,m:.05}),     // сэндвич-панели
+    mRoof=M(0x2E6FBF,{r:.6,m:.25}),       // синяя кровля
+    mRoofD=M(0x245A9C,{r:.6,m:.25}),
+    mDarkM=M(0x5A6168,{r:.7,m:.3}),
+    mGravel=M(0x989EA6,{r:1,m:0}),
+    mRed=M(0xB5342A,{r:.6,m:.2}), mWhite=M(0xE6EAEE,{r:.6,m:.2}),
+    mYel=M(0xE2B23A,{r:.7,m:.1}), mBlk=M(0x23282E,{r:.8,m:.1});
+
+function box(g,w,h,d,x,y,z,mat){var m=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),mat||mGalv);
+  m.position.set(x,y+h/2,z);g.add(m);return m;}
+function cylG(rt,rb,h,s){return new THREE.CylinderGeometry(rt,rb,h,s||14);}
+var insGeoCache={};
+function insGeo(r,h){var k=r+'_'+h;if(insGeoCache[k])return insGeoCache[k];
+  var pts=[],n=Math.max(4,Math.round(h/0.34));pts.push(new THREE.Vector2(r*0.55,0));
+  for(var i=0;i<n;i++){var y0=h*i/n,y1=h*(i+0.55)/n,y2=h*(i+1)/n;
+    pts.push(new THREE.Vector2(r,y0+0.02),new THREE.Vector2(r,y1),new THREE.Vector2(r*0.55,y2));}
+  pts.push(new THREE.Vector2(r*0.4,h));
+  return insGeoCache[k]=new THREE.LatheGeometry(pts,12);}
+function insCol(g,r,h,x,y,z,mat){var m=new THREE.Mesh(insGeo(r,h),mat||mPorc);
+  m.position.set(x,y,z);g.add(m);return m;}
+function sag(a,b,s,seg){var pts=[];seg=seg||10;
+  for(var i=0;i<=seg;i++){var t=i/seg;
+    pts.push(new THREE.Vector3(a.x+(b.x-a.x)*t,a.y+(b.y-a.y)*t-s*4*t*(1-t),a.z+(b.z-a.z)*t));}
+  return new THREE.CatmullRomCurve3(pts);}
+function wire(g,a,b,s,r,mat){var m=new THREE.Mesh(new THREE.TubeGeometry(sag(a,b,s),16,r||0.05,6),mat||mWire);
+  g.add(m);return m;}
+
+function stand(g,x,z,h){ // стойка под аппарат (решётчатая колонна как на фото)
+  box(g,0.75,h,0.75,x,0,z,mGalv);
+  box(g,1.5,0.14,1.5,x,h,z,mGalv);
+  box(g,1.2,0.5,1.2,x,-0.5+0.02,z,mConc);
+}
+function disconnector(g,x,z,rot){ // двухколонковый с красно-белой штангой
+  var gr=new THREE.Group();gr.position.set(x,0,z);gr.rotation.y=rot||0;g.add(gr);
+  for(var p=-1;p<=1;p++){
+    stand(gr,0,p*2.6,2.6);
+    insCol(gr,0.22,1.5,-0.55,2.74,p*2.6); insCol(gr,0.22,1.5,0.55,2.74,p*2.6);
+    box(gr,1.5,0.1,0.12,0,4.3,p*2.6,mGalv);
+  }
+  var bar=box(gr,0.1,0.1,6.0,0,2.62,0,mRed); // штанга привода красно-белая
+  for(var i=-2;i<=2;i+=2) box(gr,0.12,0.12,0.5,0,2.62,i*1.2,mWhite);
+  return gr;
+}
+function breaker(g,x,z,rot){ // элегазовый колонковый на общей раме
+  var gr=new THREE.Group();gr.position.set(x,0,z);gr.rotation.y=rot||0;g.add(gr);
+  box(gr,1.0,1.5,7.0,0,0,0,mGalvD);
+  box(gr,1.2,1.0,1.1,0,0.4,-3.9,mPanel); // шкаф привода
+  for(var p=-1;p<=1;p++){
+    insCol(gr,0.26,2.0,0,1.5,p*2.3);
+    var brk=new THREE.Mesh(cylG(0.3,0.3,1.1,12),mPorcL);brk.position.set(0,4.1,p*2.3);gr.add(brk);
+    var cap=new THREE.Mesh(cylG(0.34,0.34,0.5,12),mGalv);cap.position.set(0,4.85,p*2.3);gr.add(cap);
+  }
+  return gr;
+}
+function ctSet(g,x,z){ for(var p=-1;p<=1;p++){ stand(g,x,z+p*2.3,2.2);
+  insCol(g,0.24,1.4,x,2.34,z+p*2.3);
+  var hd=new THREE.Mesh(cylG(0.42,0.42,0.7,12),mGalv);hd.position.set(x,4.1,z+p*2.3);g.add(hd);}}
+function portal(g,x,zHalf,h){ // решётчатый П-портал
+  function col(zz){ for(var i=0;i<2;i++)for(var j=0;j<2;j++)
+      box(g,0.12,h,0.12,x+(i-0.5)*0.7,0,zz+(j-0.5)*0.7,mGalv);
+    var n=Math.round(h/1.1);
+    for(var k=0;k<n;k++){var d=new THREE.Mesh(new THREE.BoxGeometry(0.07,1.25,0.07),mGalv);
+      d.position.set(x,(k+0.5)*h/n,zz);d.rotation.x=(k%2?1:-1)*0.6;g.add(d);
+      var d2=d.clone();d2.rotation.z=(k%2?1:-1)*0.6;d2.rotation.x=0;g.add(d2);}
+  }
+  col(-zHalf);col(zHalf);
+  box(g,0.6,0.6,zHalf*2+1,x,h-0.6,0,mGalv);
+  box(g,0.3,0.3,zHalf*2+1,x,h-1.6,0,mGalv);
+}
+function transformerNIM(gE,x,z,withGuts){ // CHINT 40 МВА по фото
+  var g=new THREE.Group();g.position.set(x,0,z);gE.add(g);
+  box(g,9.5,0.45,6.5,0,0,0,mConc);
+  // маслоприёмник с чёрно-жёлтым бордюром
+  for(var sx=-1;sx<=1;sx+=2){var e=box(g,9.9,0.3,0.3,0,0.02,sx*3.4,mYel);
+    for(var i=-4;i<=4;i+=2)box(g,0.8,0.32,0.32,i,0.02,sx*3.4,mBlk);}
+  for(var sz=-1;sz<=1;sz+=2){box(g,0.3,0.3,7.0,sz*5.0,0.02,0,mYel);
+    for(var i=-2;i<=2;i+=2)box(g,0.32,0.32,0.8,sz*5.0,0.02,i,mBlk);}
+  var shell=new THREE.Group();g.add(shell);
+  var tm=withGuts?mTank.clone():mTank;
+  if(withGuts){tm.side=THREE.DoubleSide;tm.clippingPlanes=[clipPlane];}
+  var tank=new THREE.Mesh(new THREE.BoxGeometry(6.6,3.6,3.6),tm);tank.position.y=0.45+1.8;shell.add(tank);
+  var lid=new THREE.Mesh(new THREE.BoxGeometry(6.9,0.25,3.9),tm);lid.position.y=4.0;shell.add(lid);
+  if(withGuts)exPart(lid,0,4.8,2.2);
+  var cons=new THREE.Mesh(cylG(0.65,0.65,4.4,14),mTank);cons.rotation.z=Math.PI/2;
+  cons.position.set(0.5,5.1,-1.25);g.add(cons);
+  if(withGuts)exPart(cons,0,5.4,-1.0);
+  // радиаторы по торцам (как CHINT на фото) + воздуховод обдува
+  for(var sx=-1;sx<=1;sx+=2){var rb=new THREE.Group();g.add(rb);
+    for(var i=0;i<5;i++)box(rb,0.15,2.9,3.2,sx*(3.8+i*0.28),0.8,0,mTank);
+    if(withGuts)exPart(rb,sx*4.4,0.5,0);}
+  var duct=new THREE.Mesh(cylG(0.55,0.75,2.6,12),M(0xD9D2C4,{r:.7,m:.1}));
+  duct.rotation.z=0.9;duct.position.set(2.6,5.0,1.1);g.add(duct);
+  if(withGuts)exPart(duct,1.4,4.6,1.2);
+  // вводы 110 (тёмный фарфор) и 10 кВ
+  for(var p=-1;p<=1;p++){
+    var b110=new THREE.Mesh(insGeo(0.24,2.6),mPorc);b110.position.set(-1.7,4.0,p*1.25);g.add(b110);
+    if(withGuts)exPart(b110,0,5.2,0);
+    var b10=new THREE.Mesh(insGeo(0.14,0.9),mPorc);b10.position.set(1.9,4.0,p*1.1);g.add(b10);
+    if(withGuts)exPart(b10,0,3.6,0);
+  }
+  if(withGuts){
+    var guts=new THREE.Group();guts.position.y=0.7;g.add(guts);
+    for(var i=-1;i<=1;i++){var limb=new THREE.Mesh(cylG(0.72,0.72,2.3,16),mCore);
+      limb.position.set(i*1.95,1.85,0);guts.add(limb);}
+    box(guts,5.5,0.6,1.5,0,3.0,0,mCore);box(guts,5.5,0.6,1.5,0,0.25,0,mCore);
+    for(var i=-1;i<=1;i++){var xx=i*1.95;
+      var w1=new THREE.Mesh(cylG(0.9,0.9,2.0,18),mCopper[0]);w1.position.set(xx,1.85,0);guts.add(w1);
+      var w2=new THREE.Mesh(cylG(1.15,1.15,2.15,18),mCopper[1]);w2.position.set(xx,1.85,0);guts.add(w2);}
+    var rpn=new THREE.Mesh(new THREE.BoxGeometry(0.8,1.9,0.8),mDarkM);rpn.position.set(3.0,1.7,0);guts.add(rpn);
+    cutLight=new THREE.PointLight(0xFFB02E,0,12,1.6);cutLight.position.set(0,2.4,-0.5);guts.add(cutLight);
+    cutEdge=new THREE.Mesh(new THREE.BoxGeometry(6.65,3.65,0.05),
+      new THREE.MeshBasicMaterial({color:0x2DD4E8,transparent:true,opacity:0}));
+    cutEdge.position.set(0,2.25,0);g.add(cutEdge);
+  }
+  return g;
+}
+function buildingNIM(gS,x,z,w,d,h){ // блочно-модульное ЗРУ: белые панели, синяя кровля, сваи
+  var g=new THREE.Group();g.position.set(x,0,z);gS.add(g);
+  var nx=Math.round(w/3),nz=Math.round(d/3);
+  for(var i=0;i<=nx;i++)for(var j=0;j<=nz;j++)
+    if(i===0||i===nx||j===0||j===nz) box(g,0.35,1.0,0.35,-w/2+i*w/nx,0,-d/2+j*d/nz,mConc);
+  box(g,w,0.35,d,0,1.0,0,mGalvD);
+  box(g,w,h,d,0,1.35,0,mPanel);
+  for(var i=0;i<Math.floor(d/2.6);i++){ // рёбра панелей
+    box(g,0.04,h,0.1,w/2+0.01,1.35,-d/2+1.3+i*2.6,mGalvD);
+    box(g,0.04,h,0.1,-w/2-0.01,1.35,-d/2+1.3+i*2.6,mGalvD);}
+  var roof=box(g,w+0.7,0.55,d+0.7,0,1.35+h,0,mRoof);
+  box(g,w+0.75,0.12,d+0.75,0,1.3+h,0,mRoofD);
+  // дверь + лестница
+  box(g,0.1,2.0,1.1,w/2+0.03,1.4,d/2-2.2,mGalvD);
+  for(var s=0;s<4;s++)box(g,1.0,0.1,0.32,w/2+0.8,0.25*s,d/2-2.2,mGalv);
+  return g;
+}
+function tower(g,x,z,h,rot){ // анкерная опора 110 кВ красно-белая
+  var gr=new THREE.Group();gr.position.set(x,0,z);gr.rotation.y=rot||0;g.add(gr);
+  var w0=3.4,w1=0.9;
+  for(var i=0;i<4;i++){var a=i*Math.PI/2+Math.PI/4;
+    var leg=new THREE.Mesh(new THREE.BoxGeometry(0.16,h,0.16),i<2?mRed:mRed);
+    var x0=Math.cos(a)*w0*0.7,z0=Math.sin(a)*w0*0.7,x1=Math.cos(a)*w1*0.7,z1=Math.sin(a)*w1*0.7;
+    leg.position.set((x0+x1)/2,h/2,(z0+z1)/2);
+    leg.rotation.z=Math.atan2(x0-x1,h);leg.rotation.x=-Math.atan2(z0-z1,h);gr.add(leg);}
+  var seg=7;
+  for(var k=0;k<seg;k++){var yy=h*(k+0.5)/seg,ww=w0+(w1-w0)*(k+0.5)/seg;
+    var ring=new THREE.Mesh(new THREE.BoxGeometry(ww,0.1,ww),(k%2)?mWhite:mRed);
+    ring.position.set(0,yy,0);gr.add(ring);}
+  // траверсы
+  [[0.78,2.6],[0.60,3.1],[0.42,2.6]].forEach(function(tv){
+    var arm=box(gr,tv[1]*2,0.22,0.5,0,h*tv[0],0,mRed);
+    for(var s=-1;s<=1;s+=2){var ins=new THREE.Mesh(insGeo(0.1,1.1),mPorcL);
+      ins.position.set(s*tv[1],h*tv[0]-1.1,0);ins.rotation.x=Math.PI;gr.add(ins);}
+  });
+  box(gr,0.1,3.2,0.1,0,h,0,mGalv);
+  return gr;
+}
+function poplar(g,x,z,h){ // тополь
+  var tr=new THREE.Mesh(cylG(0.08,0.14,h*0.25,6),M(0x6B5B47,{r:.9,m:0}));
+  tr.position.set(x,h*0.125,z);g.add(tr);
+  var cr=new THREE.Mesh(new THREE.SphereGeometry(h*0.14,7,6),M(0x2F5428,{r:.95,m:0}));
+  cr.scale.y=3.1;cr.position.set(x,h*0.56,z);g.add(cr);
+}
+function checker(g,x,z,ry){ // шахматный щит на стене (деталь с фото)
+  var c=document.createElement('canvas');c.width=c.height=64;var cx=c.getContext('2d');
+  for(var i=0;i<4;i++)for(var j=0;j<4;j++){cx.fillStyle=(i+j)%2?'#1C222B':'#E8ECEF';
+    cx.fillRect(i*16,j*16,16,16);}
+  var t=new THREE.CanvasTexture(c);
+  var m=new THREE.Mesh(new THREE.PlaneGeometry(2.6,2.6),
+    new THREE.MeshStandardMaterial({map:t,roughness:.9}));
+  m.position.set(x,1.6,z);m.rotation.y=ry;g.add(m);
+}
+
+function buildScene(){
+  scene=new THREE.Scene();
+  (function sky(){var c=document.createElement('canvas');c.width=2;c.height=512;
+    var x=c.getContext('2d'),gr=x.createLinearGradient(0,0,0,512);
+    gr.addColorStop(0,'#5E96D4');gr.addColorStop(.45,'#8FBCE8');
+    gr.addColorStop(.75,'#C9DEF2');gr.addColorStop(1,'#DCE9F4');
+    x.fillStyle=gr;x.fillRect(0,0,2,512);
+    scene.background=new THREE.CanvasTexture(c);})();
+  scene.fog=new THREE.FogExp2(0xC7DCEF,0.0019);
+  camera=new THREE.PerspectiveCamera(45,1,0.5,1500);
+
+  scene.add(new THREE.HemisphereLight(0xB3CDE8,0x7A7C6C,0.5));
+  var sun=new THREE.DirectionalLight(0xFFF1D8,2.2);sun.position.set(70,110,35);scene.add(sun);
+  var fill=new THREE.DirectionalLight(0xA8C6E8,0.22);fill.position.set(-80,60,-60);scene.add(fill);
+  if(HQ){sun.castShadow=true;sun.shadow.mapSize.set(2048,2048);sun.shadow.bias=-0.0005;
+    var sc=sun.shadow.camera;sc.left=-110;sc.right=110;sc.top=95;sc.bottom=-80;sc.near=30;sc.far=300;}
+  try{var pm=new THREE.PMREMGenerator(renderer);var env=new THREE.Scene();
+    env.background=new THREE.Color(0x9FC0E2);
+    function ep(c,w,h,x,y,z){var m=new THREE.Mesh(new THREE.PlaneGeometry(w,h),
+      new THREE.MeshBasicMaterial({color:c}));m.position.set(x,y,z);m.lookAt(0,0,0);env.add(m);}
+    ep(0xFFF4DE,70,45,60,70,30); ep(0x7FA8D0,220,220,0,90,0); ep(0x55703F,300,60,0,-40,0);
+    scene.environment=pm.fromScene(env).texture;pm.dispose();
+  }catch(e){}
+
+  // земля: дневные поля
+  var ground=new THREE.Mesh(new THREE.CircleGeometry(420,48),M(0x66774C,{r:1,m:0}));
+  ground.rotation.x=-Math.PI/2;scene.add(ground);
+  (function fields(){var tones=[0x567244,0x648550,0x4C6A3C,0x6E8A55,0x5B764A,0x7E9460];
+    function rng(a,b){return a+Math.random()*(b-a);}var k=0;
+    for(var ring=0;ring<2;ring++){var n=ring?10:8;
+      for(var i=0;i<n;i++){var a=(i+(ring?0.5:0))/n*Math.PI*2;
+        var r=ring?265:160,cx=Math.cos(a)*r,cz=Math.sin(a)*r;
+        if(Math.abs(cx)<90&&Math.abs(cz)<65)continue;
+        var f=new THREE.Mesh(new THREE.PlaneGeometry(rng(55,95),rng(40,70)),
+          new THREE.MeshStandardMaterial({color:tones[k++%tones.length],roughness:1,metalness:0}));
+        f.rotation.x=-Math.PI/2;f.rotation.z=a+rng(-.3,.3);
+        f.position.set(cx,0.04+k*0.004,cz);f.receiveShadow=true;scene.add(f);}}
+  })();
+  // тополиные лесополосы
+  for(var i=0;i<60;i++){var a=Math.random()*Math.PI*2,r=120+Math.random()*180;
+    var cx=Math.cos(a)*r,cz=Math.sin(a)*r;
+    if(Math.abs(cx)<75&&Math.abs(cz)<58)continue;
+    poplar(scene,cx,cz,10+Math.random()*7);}
+  for(var x=-70;x<=70;x+=7){poplar(scene,x,78+Math.random()*4,11+Math.random()*5);}
+
+  for(var k in G){G[k]=new THREE.Group();scene.add(G[k]);}
+
+  // площадка: гравий + бетонная стена + дороги
+  var pad=new THREE.Mesh(new THREE.BoxGeometry(112,0.2,82),mGravel);
+  pad.position.y=0.1;pad.receiveShadow=true;scene.add(pad);
+  (function wall(){var hx=56,hz=41,h=2.5,t=0.25;
+    [[0,-hz,112,0],[0,hz,112,0],[-hx,0,0,82],[hx,0,0,82]].forEach(function(s){
+      var w=box(G.F,s[2]||t,h,s[3]||t,s[0],0.1,s[1],mWallC);w.castShadow=true;});
+    for(var x=-52;x<=52;x+=8){box(G.F,0.35,h+0.25,0.4,x,0.1,-hz,mConc);box(G.F,0.35,h+0.25,0.4,x,0.1,hz,mConc);}
+    for(var z=-36;z<=36;z+=8){box(G.F,0.4,h+0.25,0.35,-hx,0.1,z,mConc);box(G.F,0.4,h+0.25,0.35,hx,0.1,z,mConc);}
+  })();
+  checker(G.F,-10.5,40.8,Math.PI);
+  // бетонные дороги
+  box(G.F,104,0.06,5,0,0.21,0,M(0xB2B6BC,{r:.95,m:0}));
+  box(G.F,5,0.06,74,-20,0.21,0,M(0xB2B6BC,{r:.95,m:0}));
+  box(G.F,5,0.06,74,20,0.21,0,M(0xB2B6BC,{r:.95,m:0}));
+  box(G.F,6,0.1,16,0,0.12,48,M(0xB8BCC2,{r:1,m:0})); // выезд
+  // прожекторные мачты
+  [[-50,-36],[50,36]].forEach(function(p){
+    box(G.S,0.3,14,0.3,p[0],0.2,p[1],mGalv);
+    box(G.S,1.6,0.3,0.5,p[0],14,p[1],mGalvD);});
+
+  // ЗРУ-модули (запад)
+  buildingNIM(G.S,-40,-13,10,26,3.6);
+  buildingNIM(G.S,-40,16,10,22,3.6);
+  box(G.S,4,2.6,3,-30,0.2,-30,mPanel); // малый модуль
+  // трансформаторы
+  transformerNIM(G.E,-12,-14,true);
+  transformerNIM(G.E,-12,13,false);
+  // порталы у трансформаторов
+  portal(G.S,-7.5,4.2,7.5);
+  portal(G.S,-16.5,4.2,7.5);
+  // ОРУ-110: два присоединения
+  [[-14],[13]].forEach(function(row){var z=row[0];
+    disconnector(G.E,6,z,0); breaker(G.E,16,z,0); ctSet(G.E,26,z); disconnector(G.E,34,z,0);
+    for(var p=-1;p<=1;p++){
+      wire(G.W,new THREE.Vector3(-7.5,7.0,z+p*1.25),new THREE.Vector3(-13.7,4.0+2.6,z+p*1.25),0.8,0.045);
+      wire(G.W,new THREE.Vector3(-7.5,7.0,z+p*2.3),new THREE.Vector3(6,4.35,z+p*2.3),1.2,0.045);
+      wire(G.W,new THREE.Vector3(6,4.35,z+p*2.3),new THREE.Vector3(16,4.6,z+p*2.3),0.9,0.045);
+      wire(G.W,new THREE.Vector3(16,4.6,z+p*2.3),new THREE.Vector3(26,4.4,z+p*2.3),0.8,0.045);
+      wire(G.W,new THREE.Vector3(26,4.4,z+p*2.3),new THREE.Vector3(34,4.35,z+p*2.3),0.8,0.045);
+      wire(G.W,new THREE.Vector3(34,4.35,z+p*2.3),new THREE.Vector3(44,12.5,z+p*2.3),0.6,0.045);
+    }
+  });
+  portal(G.S,44,20,14); // шинный/заходной портал
+  // анкерная опора за стеной + заходы
+  var tw=tower(G.S,64,30,27,-0.5);
+  for(var p=-1;p<=1;p++){
+    wire(G.W,new THREE.Vector3(44,13.2,-14+p*2.3),new THREE.Vector3(62,19,28+p*2),2.5,0.05);
+    wire(G.W,new THREE.Vector3(44,13.2,13+p*2.3),new THREE.Vector3(63,16.5,29+p*2),2.2,0.05);
+  }
+  // тени
+  scene.traverse(function(o){if(o.isMesh){
+    var g2=o.geometry&&o.geometry.type;
+    o.castShadow=HQ&&g2!=='TubeGeometry'&&g2!=='CircleGeometry'&&g2!=='PlaneGeometry'
+      &&o.material.type!=='MeshBasicMaterial';
+    o.receiveShadow=HQ&&o.material.type!=='MeshBasicMaterial';
+    if(o.material.isMeshStandardMaterial)o.material.envMapIntensity=0.22;}});
+  mCopper.forEach(function(m){m.envMapIntensity=0.1;});
+}
+
+/* ============ выноски ============ */
+var cosEl=document.getElementById('cos'),callouts=[];
+function addCO(sec,from,to,x,y,z,t1,t2){
+  var d=document.createElement('div');d.className='co';
+  d.innerHTML='<span class="co-dot"></span><span class="co-tx"><b>'+t1+'</b><i>'+t2+'</i></span>';
+  cosEl.appendChild(d);callouts.push({el:d,sec:sec,from:from,to:to,p:new THREE.Vector3(x,y,z)});}
+addCO('tour',.04,.22,-40,6.5,0,   'Блочно-модульные ЗРУ','КРУ 10 кВ · РЗА · NURA Electric');
+addCO('tour',.22,.42,-12,6.5,-14, 'Трансформаторы CHINT','2 × 40 МВА · 110/10 кВ');
+addCO('tour',.42,.62,20,7,0,      'ОРУ-110 кВ','2 присоединения · выключатели · ТТ');
+addCO('tour',.62,.80,44,15,0,     'Заходной портал','приём ВЛ 110 кВ');
+addCO('tour',.80,.96,64,24,30,    'Анкерная опора','ВЛ 110 кВ · 17,6 км');
+addCO('cut',.06,.30,-13.7,7.6,-14,'Вводы 110 кВ','фарфоровые изоляторы');
+addCO('cut',.14,.38,-16.6,3,-14,  'Радиаторы','охлаждение с обдувом');
+addCO('cut',.44,.72,-12,3.8,-14,  'Магнитопровод','электротехническая сталь');
+addCO('cut',.58,.86,-10,3,-13,    'Обмотки','110 / 10 кВ · медь');
+addCO('cut',.74,.95,-9,2.6,-14,   'РПН','регулирование под нагрузкой');
+
+/* ============ скролл и камера ============ */
+function $(id){return document.getElementById(id);}
+var secs={},ids=['hero','kpi','tour','cut','gallery','equip','build','nura','final'];
+ids.forEach(function(i){secs[i]=$(i);});
+var vh=innerHeight,keys=[],smoother=null;
+function kf(sec,f,px,py,pz,tx,ty,tz){var el=secs[sec],span=el.offsetHeight-vh;
+  keys.push({y:el.offsetTop+span*f,p:new THREE.Vector3(px,py,pz),t:new THREE.Vector3(tx,ty,tz)});}
+function layout(){
+  vh=innerHeight;keys.length=0;
+  // ракурс титульного фото ~ 3/4 сверху с юго-запада
+  kf('hero',0, -95,72,105, 0,2,0);
+  kf('hero',1, -78,58,88, 0,2,0);
+  kf('kpi',.6, -60,42,78, 0,3,0);
+  var R=[92,88,84,80,78,74],H=[30,26,23,21,19,17],A=[215,165,115,70,30,-10];
+  var T=[[-40,4,0],[-12,4,-5],[10,4,0],[30,5,0],[50,8,10],[40,6,5]];
+  for(var i=0;i<6;i++){var a=A[i]*Math.PI/180;
+    kf('tour',i/5,Math.cos(a)*R[i],H[i],Math.sin(a)*R[i],T[i][0],T[i][1],T[i][2]);}
+  kf('cut',0, 12,11,-38, -12,4,-14);
+  kf('cut',.45, 0,7.5,-31, -12,3.4,-14);
+  kf('cut',1, -6,5.4,-26.5, -11.6,2.9,-14);
+  kf('gallery',.5, -70,40,70, 0,3,0);
+  kf('build',0, 60,52,62, 0,1,0);
+  kf('build',1, 50,36,56, 0,3,0);
+  kf('nura',.5, 72,26,-66, 0,5,0);
+  kf('final',0, -70,30,-85, 0,4,0);
+  kf('final',1, -100,44,-115, 0,5,0);
+  keys.sort(function(a,b){return a.y-b.y;});
+  if(renderer){renderer.setSize(innerWidth,innerHeight);
+    camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();}
+}
+function sm(t){t=Math.min(1,Math.max(0,t));return t*t*(3-2*t);}
+var curY=0;
+function secT(id){var el=secs[id],span=el.offsetHeight-vh;
+  return Math.min(1,Math.max(0,(curY-el.offsetTop)/Math.max(1,span)));}
+var camP=new THREE.Vector3(-95,72,105),camT=new THREE.Vector3(0,2,0),
+    goalP=camP.clone(),goalT=camT.clone();
+function camAt(y){
+  if(y<=keys[0].y){goalP.copy(keys[0].p);goalT.copy(keys[0].t);return;}
+  var last=keys[keys.length-1];
+  if(y>=last.y){goalP.copy(last.p);goalT.copy(last.t);return;}
+  for(var i=0;i<keys.length-1;i++){var a=keys[i],b=keys[i+1];
+    if(y>=a.y&&y<b.y){var t=sm((y-a.y)/(b.y-a.y));
+      goalP.lerpVectors(a.p,b.p,t);goalT.lerpVectors(a.t,b.t,t);return;}}
+}
+
+var heroBox=$('heroBox'),hintEl=$('hint'),tourBox=$('tourBox'),
+    scrim=$('scrim'),pgfill=$('pgfill'),pfill=$('pfill'),moNum=$('moNum'),
+    fxHero=$('fxHero'),fxGal=$('fxGal'),fxFinal=$('fxFinal'),
+    galN=$('galN'),galT=$('galT'),galP=$('galP'),galCap=$('galCap'),
+    phEls=document.querySelectorAll('#phases .ph');
+
+var GAL=[
+ ['photos/site/05.jpg','Монтаж ОРУ-110 кВ','Апрель 2025: установка разъединителей и выключателей, монтаж ошиновки.'],
+ ['photos/transformer/03.jpg','Трансформаторы на фундаментах','CHINT 40 МВА: монтаж систем охлаждения и вводов 110 кВ.'],
+ ['photos/site/01.jpg','Объект завершён','Февраль 2026: подстанция в финальной конфигурации, территория благоустроена.']];
+GAL.forEach(function(g){var im=new Image();im.src=g[0];}); // прогрев
+var galIdx=-1;
+
+function stageVis(stage){var arr=[G.F,G.S,G.E,G.W];
+  for(var i=0;i<4;i++){var v=Math.min(1,Math.max(0,stage-i));
+    var g=arr[i];g.visible=v>0.02;g.scale.y=0.02+0.98*sm(v);}}
+var inBuild=false;
+
+function domOnly(){
+  var tb=secT('build');
+  if(secs.build.offsetTop<=curY+vh&&curY<=secs.build.offsetTop+secs.build.offsetHeight){
+    var st=Math.min(4,Math.max(1,Math.ceil(tb*4+0.001)));
+    moNum.textContent=st;pfill.style.width=(tb*100).toFixed(1)+'%';
+    phEls.forEach(function(e,i){e.classList.toggle('on',i<st);});
+  }
+  // фото-глава
+  var tg=secT('gallery');
+  if(tg>0&&tg<1){
+    var k=Math.min(GAL.length-1,Math.floor(tg*GAL.length*1.0001));
+    if(k!==galIdx){galIdx=k;var g=GAL[k];
+      fxGal.style.backgroundImage='url('+g[0]+')';
+      galN.textContent='0'+(k+1)+' / 0'+GAL.length;galT.textContent=g[1];galP.textContent=g[2];}
+    var rise=sm(Math.min(1,tg/.1)),fall=1-sm(Math.max(0,(tg-.88)/.12));
+    fxGal.style.opacity=(rise*fall).toFixed(3);
+    var lt=(tg*GAL.length)%1;
+    fxGal.style.transform='scale('+(1.04+0.05*lt)+')';
+    galCap.style.opacity=Math.min(1,Math.min(lt/.12,(1-lt)/.12)+.15).toFixed(2);
+  } else { fxGal.style.opacity=0; galIdx=-1; }
+}
+
+function update(){
+  if(renderer)camAt(curY);
+  var th=secT('hero');
+  // титульное фото растворяется в 3D
+  fxHero.style.opacity=Math.max(0,1-sm(th*1.6));
+  fxHero.style.transform='scale('+(1+th*0.06)+')';
+  heroBox.style.opacity=Math.max(0,1-Math.max(0,(th-.45))*2.4);
+  heroBox.style.transform='translateY('+(-th*30)+'px)';
+  if(hintEl)hintEl.style.opacity=Math.max(0,1-th*5);
+  if(tourBox){var tt=secT('tour');
+    tourBox.style.opacity=Math.max(0,Math.min(1,1-(tt-.26)/.12)).toFixed(2);}
+  var tn=secT('nura');
+  var win=function(t){if(t<=0||t>=1)return 0;
+    return sm(Math.min(1,t/.12))*(1-sm(Math.max(0,(t-.85)/.15)));};
+  scrim.style.opacity=win(tn).toFixed(3);
+  // финал: фото заката поверх 3D
+  var tf=secT('final');
+  fxFinal.style.opacity=(tf>0?sm(Math.min(1,tf/.5)):0).toFixed(3);
+  fxFinal.style.transform='scale('+(1.08-0.06*sm(tf))+')';
+  domOnly();
+  if(!renderer)return;
+  var tc=secT('cut'),cut=sm(Math.min(1,Math.max(0,(tc-.28)/.5)));
+  clipPlane.constant=16.2-cut*2.2; // бак z −15.8..−12.2 (центр −14)
+  if(cutEdge){cutEdge.position.z=14-clipPlane.constant; // группа Т-1 стоит в z=−14
+    cutEdge.material.opacity=Math.min(1,cut*(1-cut)*5)*.8;}
+  if(cutLight)cutLight.intensity=cut*1.1;
+  var ex=sm(Math.min(1,Math.max(0,(tc-.74)/.22)));
+  for(var ei=0;ei<exParts.length;ei++){var pp=exParts[ei];
+    pp.o.position.copy(pp.b).addScaledVector(pp.d,ex);}
+  var tb=secT('build');
+  if(secs.build.offsetTop<=curY+vh&&curY<=secs.build.offsetTop+secs.build.offsetHeight){
+    stageVis(.3+tb*3.7);inBuild=true;
+  }else if(inBuild){stageVis(4);inBuild=false;}
+}
+
+function projectCOs(){
+  var w=innerWidth,h=innerHeight,v=new THREE.Vector3();
+  callouts.forEach(function(c){
+    var t=secT(c.sec),vis=t>c.from&&t<c.to;
+    if(!vis){c.el.style.opacity=0;return;}
+    v.copy(c.p).project(camera);
+    if(v.z>1){c.el.style.opacity=0;return;}
+    var edge=Math.min((t-c.from)/.06,(c.to-t)/.06,1);
+    c.el.style.opacity=Math.max(0,Math.min(1,edge)).toFixed(2);
+    c.el.style.transform='translate('+((v.x*.5+.5)*w).toFixed(1)+'px,'+((-v.y*.5+.5)*h).toFixed(1)+'px)';});
+}
+
+var maxScroll=1,shiftCur=0;
+function viewShift(){
+  if(innerWidth<761)return 0;
+  var th=secT('hero'),tn=secT('nura');
+  var pres=function(t){if(t<=0||t>=1)return 0;
+    return sm(Math.min(1,t/.12))*(1-sm(Math.max(0,(t-.85)/.15)));};
+  return Math.max(.07*(1-sm(th)),.16*pres(tn));
+}
+var mouseX=0,mouseY=0,mouseAct=0,rollCur=0,prevCam=camP.clone(),prevYv=-1,stillN=0;
+var _dir=new THREE.Vector3(),_right=new THREE.Vector3(),_up2=new THREE.Vector3(),_look=new THREE.Vector3();
+addEventListener('pointermove',function(e){if(innerWidth<761||RM)return;
+  mouseX=e.clientX/innerWidth*2-1;mouseY=e.clientY/innerHeight*2-1;mouseAct=1;},{passive:true});
+function tick(){
+  curY=smoother?smoother.scrollTop():(window.scrollY||0);
+  update();
+  if(pgfill)pgfill.style.width=Math.min(100,curY/maxScroll*100).toFixed(2)+'%';
+  if(dots)dotsUpdate();
+  if(!renderer)return;
+  var th=secT('hero');
+  if(th<1&&!RM){var w=(1-sm(th)),now=performance.now();
+    goalP.x+=Math.sin(now*0.00011)*2.0*w;goalP.y+=Math.sin(now*0.00008+2)*0.8*w;}
+  var k=RM?1:0.12;
+  camP.lerp(goalP,k);camT.lerp(goalT,k);
+  _dir.subVectors(camT,camP).normalize();
+  _right.crossVectors(_dir,camera.up).normalize();
+  _up2.crossVectors(_right,_dir);
+  var pw=RM?0:(0.45+0.8*(1-sm(th)));
+  _look.copy(camT).addScaledVector(_right,mouseX*1.2*pw).addScaledVector(_up2,-mouseY*0.6*pw);
+  camera.position.copy(camP);camera.lookAt(_look);
+  var latv=_right.dot(camP.clone().sub(prevCam));
+  var rollTgt=Math.max(-0.025,Math.min(0.025,-latv*0.02));
+  rollCur+=(rollTgt-rollCur)*(RM?1:0.07);
+  camera.rotateZ(rollCur);prevCam.copy(camP);
+  shiftCur+=(viewShift()-shiftCur)*(RM?1:.1);
+  if(shiftCur>0.002)camera.setViewOffset(innerWidth,innerHeight,-shiftCur*innerWidth,0,innerWidth,innerHeight);
+  else if(camera.view&&camera.view.enabled)camera.clearViewOffset();
+  var act=camP.distanceTo(goalP)+Math.abs(curY-prevYv)+Math.abs(viewShift()-shiftCur)
+    +Math.abs(rollTgt-rollCur)*40+mouseAct+(th<1&&!RM?1:0);
+  prevYv=curY;mouseAct=0;
+  if(act>0.004)stillN=0;else stillN++;
+  if(stillN<14){renderer.render(scene,camera);projectCOs();}
+}
+
+/* точки-навигация */
+var dots=$('dots'),dotBtns=[];
+function buildDots(){
+  ids.forEach(function(id){var b=document.createElement('button');
+    b.innerHTML='<span>'+secs[id].getAttribute('data-nav')+'</span>';
+    b.setAttribute('aria-label',secs[id].getAttribute('data-nav'));
+    b.addEventListener('click',function(){
+      var y=secs[id].offsetTop+(secs[id].offsetHeight-vh)*0.5;
+      if(smoother)smoother.scrollTo(y,true);
+      else scrollTo({top:y,behavior:RM?'auto':'smooth'});});
+    dots.appendChild(b);dotBtns.push({b:b,id:id});});
+}
+function dotsUpdate(){var act=0;
+  dotBtns.forEach(function(d,i){if(curY>=secs[d.id].offsetTop-vh*0.5)act=i;});
+  dotBtns.forEach(function(d,i){d.b.classList.toggle('on',i===act);});}
+
+/* GSAP-хореография */
+function setupGsap(){
+  ids.forEach(function(id){ScrollTrigger.create({trigger:'#'+id,start:'top top',
+    end:'bottom bottom',pin:'#'+id+' .pin',pinSpacing:false});});
+  if(window.ScrollSmoother&&!RM){
+    smoother=ScrollSmoother.create({wrapper:'#smooth-wrapper',content:'#smooth-content',
+      smooth:1.15,effects:false});}
+  if(window.SplitText&&!RM){
+    var st=new SplitText('#heroTitle',{type:'words'});
+    gsap.from(st.words,{y:46,autoAlpha:0,stagger:.07,duration:.9,ease:EASE,delay:.15});
+    gsap.from('#heroLead',{y:24,autoAlpha:0,duration:.8,ease:EASE,delay:.6});
+    gsap.from('.brand',{y:-18,autoAlpha:0,duration:.7,ease:EASE});
+    gsap.from('#heroLine',{scaleX:0,duration:.8,ease:EASE,delay:.75});
+    gsap.from('.badge',{autoAlpha:0,duration:.6,delay:1.0});
+  }
+  var counted=false;
+  ScrollTrigger.create({trigger:'#kpi',start:'top 60%',onEnter:function(){
+    if(counted)return;counted=true;
+    if(RM)return;
+    document.querySelectorAll('[data-count]').forEach(function(el){
+      var target=parseFloat(el.getAttribute('data-count')),
+          dec=parseInt(el.getAttribute('data-dec')||'0',10);
+      var o={v:0};
+      gsap.to(o,{v:target,duration:1.4,ease:'power2.out',onUpdate:function(){
+        el.textContent=o.v.toFixed(dec).replace('.',',');}});});
+    gsap.from('#kpis .kpi',{y:30,autoAlpha:0,stagger:.09,duration:.7,ease:EASE});
+  }});
+  if(!RM){
+    gsap.from('#feats .feat',{y:34,autoAlpha:0,stagger:.1,duration:.7,ease:EASE,
+      scrollTrigger:{trigger:'#nura',start:'top 55%'}});
+    gsap.from('#eqgrid .eq',{y:34,autoAlpha:0,stagger:.09,duration:.7,ease:EASE,
+      scrollTrigger:{trigger:'#equip',start:'top 55%'}});
+    var sf=new SplitText('#finalTitle',{type:'words'});
+    gsap.from(sf.words,{y:30,autoAlpha:0,stagger:.06,duration:.7,ease:EASE,
+      scrollTrigger:{trigger:'#final',start:'top 55%'}});
+  }
+  ScrollTrigger.addEventListener('refresh',function(){layout();computeMax();});
+}
+function computeMax(){maxScroll=Math.max(1,document.body.scrollHeight-vh);}
+
+/* лоадер */
+var loaderEl=$('loader'),_lt0=performance.now();
+function hideLoader(){if(!loaderEl)return;var el=loaderEl;loaderEl=null;
+  var wait=Math.max(0,650-(performance.now()-_lt0));
+  setTimeout(function(){el.classList.add('off');setTimeout(function(){el.remove();},700);},wait);}
+setTimeout(hideLoader,4500);
+
+/* запуск */
+if(renderer){buildScene();}
+layout();computeMax();buildDots();
+if(hasG){setupGsap();gsap.ticker.add(tick);gsap.ticker.lagSmoothing(500,33);}
+else{tick();addEventListener('scroll',function(){try{tick();}catch(e){}},{passive:true});}
+addEventListener('resize',function(){layout();computeMax();stillN=0;tick();});
+if(renderer){tick();camP.copy(goalP);camT.copy(goalT);prevCam.copy(camP);tick();}
+(document.fonts&&document.fonts.ready?document.fonts.ready:Promise.resolve())
+  .then(function(){requestAnimationFrame(function(){requestAnimationFrame(hideLoader);});});
+})();
+</script>
