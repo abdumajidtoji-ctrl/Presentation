@@ -1,0 +1,199 @@
+<title>Техника ПС NIM 110 кВ</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@600;700;800&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<style>
+/* Каталог техники NURA: ночное небо + золото «нур» + бирюза. Единая тёмная тема. */
+:root{
+  --night:#081426; --deep:#0E2240; --steel:#1E3A5F;
+  --white:#F4F8FF; --muted:#93A5BC;
+  --nur:#FFB02E; --nur-bright:#FFD166; --turq:#2DD4E8; --emerald:#2EBD85;
+  --font-d:"Manrope",system-ui,sans-serif;
+  --font-b:"Inter",system-ui,sans-serif;
+  --font-m:"IBM Plex Mono",ui-monospace,monospace;
+  color-scheme:dark;
+}
+body{margin:0;background:linear-gradient(180deg,#060F1E 0%,var(--night) 30%,#0A1B33 100%);
+  color:var(--white);font-family:var(--font-b);font-size:16px;line-height:1.55}
+.wrap{max-width:1180px;margin:0 auto;padding-block:30px 60px;padding-inline:20px}
+
+header{margin-bottom:26px}
+.brand{font-family:var(--font-d);font-weight:700;letter-spacing:.3em;font-size:12px;color:var(--white)}
+.brand b{color:var(--nur)}
+h1{font-family:var(--font-d);font-size:clamp(28px,4.5vw,44px);font-weight:800;
+  letter-spacing:-.015em;line-height:1.1;margin:14px 0 8px;text-wrap:balance}
+.sub{color:var(--muted);max-width:70ch;margin:0}
+.goldline{width:64px;height:3px;border-radius:2px;margin:18px 0 0;
+  background:linear-gradient(90deg,var(--nur),var(--nur-bright));
+  box-shadow:0 0 14px rgba(255,176,46,.55)}
+
+/* параметры проекта */
+.params{display:flex;flex-wrap:wrap;gap:10px 28px;margin:22px 0 0;padding:14px 18px;
+  background:rgba(14,34,64,.6);border:1px solid rgba(45,212,232,.16);border-radius:12px}
+.pm{font-size:13px;color:var(--muted)}
+.pm b{display:block;font-family:var(--font-m);font-size:17px;font-weight:600;
+  color:var(--nur);font-variant-numeric:tabular-nums}
+.note{font-family:var(--font-m);font-size:11px;color:var(--muted);margin-top:10px}
+
+/* сетка карточек */
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(330px,1fr));gap:18px;margin-top:30px}
+.card{background:rgba(14,34,64,.72);border:1px solid rgba(45,212,232,.16);border-radius:16px;
+  overflow:hidden;display:flex;flex-direction:column;min-width:0}
+.card.wide{grid-column:1/-1}
+.ph{position:relative;aspect-ratio:4/3;background:#0A1322;cursor:zoom-in;overflow:hidden}
+.card.wide .ph{aspect-ratio:21/9}
+.ph img{width:100%;height:100%;object-fit:cover;display:block;transition:transform .45s}
+.ph:hover img{transform:scale(1.03)}
+.ph .cnt{position:absolute;right:10px;top:10px;font-family:var(--font-m);font-size:11px;
+  background:rgba(6,15,30,.78);border:1px solid rgba(45,212,232,.3);border-radius:999px;
+  padding:3px 10px;color:var(--turq)}
+.nav{position:absolute;top:50%;transform:translateY(-50%);width:36px;height:36px;border:0;
+  border-radius:50%;background:rgba(6,15,30,.72);color:var(--white);font-size:18px;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;transition:background .2s}
+.nav:hover{background:rgba(255,176,46,.85);color:#1A1200}
+.nav.prev{left:10px}.nav.next{right:10px}
+.thumbs{display:flex;gap:6px;padding:10px 14px 0;overflow-x:auto}
+.thumbs img{width:56px;height:42px;object-fit:cover;border-radius:6px;cursor:pointer;
+  opacity:.55;border:1.5px solid transparent;transition:all .2s;flex:none}
+.thumbs img.on{opacity:1;border-color:var(--nur)}
+.body{padding:12px 16px 16px}
+.tag{font-family:var(--font-m);font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--turq)}
+.body h2{font-family:var(--font-d);font-size:19px;font-weight:700;margin:6px 0 8px;letter-spacing:-.01em}
+.spec{list-style:none;margin:0;padding:0;font-size:13.5px;color:var(--muted)}
+.spec li{padding:3px 0 3px 14px;position:relative}
+.spec li::before{content:"";position:absolute;left:0;top:11px;width:6px;height:6px;border-radius:2px;
+  background:var(--turq);box-shadow:0 0 8px rgba(45,212,232,.8)}
+.spec b{color:var(--white);font-weight:600}
+
+/* лайтбокс */
+#lb{position:fixed;inset:0;background:rgba(4,9,18,.94);display:none;z-index:50;
+  align-items:center;justify-content:center;flex-direction:column;padding:20px;box-sizing:border-box}
+#lb.open{display:flex}
+#lb img{max-width:95vw;max-height:82vh;border-radius:10px;box-shadow:0 10px 60px rgba(0,0,0,.6)}
+#lb .cap{margin-top:12px;font-family:var(--font-m);font-size:12.5px;color:var(--muted)}
+#lb .x{position:absolute;top:16px;right:20px;border:0;background:none;color:var(--white);
+  font-size:30px;cursor:pointer;line-height:1}
+#lb .nav{background:rgba(14,34,64,.85)}
+footer{margin-top:40px;font-family:var(--font-m);font-size:11.5px;color:var(--muted);line-height:1.8}
+@media (max-width:760px){
+  .grid{grid-template-columns:1fr}
+  .card.wide .ph{aspect-ratio:16/10}
+}
+</style>
+
+<div class="wrap">
+<header>
+  <div class="brand">NURA <b>GROUP</b> · NURA ELECTRIC · NURA EPC</div>
+  <h1>Каталог техники и оборудования<br>ПС NIM 110 кВ</h1>
+  <p class="sub">Фотофиксация основного оборудования цифровой подстанции NIM —
+  Улугнорский район (Бостон), Андижанская область. Все снимки сделаны на объекте
+  в ходе строительства и монтажа.</p>
+  <div class="goldline"></div>
+  <div class="params">
+    <div class="pm"><b>2 × 40 МВА</b>мощность</div>
+    <div class="pm"><b>110 кВ</b>класс напряжения</div>
+    <div class="pm"><b>$7,2 млн</b>стоимость проекта</div>
+    <div class="pm"><b>17,6 км</b>ВЛ 110 кВ</div>
+    <div class="pm"><b>36 млн кВт·ч</b>годовой отпуск</div>
+    <div class="pm"><b>1 га</b>площадь</div>
+  </div>
+  <p class="note">Источник параметров — паспорт проекта (баннер объекта). Заказчик: Hududiy Elektr
+  Tarmoqlari · Генподряд: UET Construction · Электротехническая часть: NURA Electric</p>
+</header>
+
+<div class="grid" id="grid"></div>
+</div>
+
+<div id="lb">
+  <button class="x" aria-label="Закрыть">×</button>
+  <button class="nav prev" aria-label="Назад">‹</button>
+  <img alt="">
+  <button class="nav next" aria-label="Вперёд">›</button>
+  <div class="cap"></div>
+</div>
+
+<footer class="wrap" style="padding-top:0">
+  NURA GROUP · Каталог предназначен для коммерческих предложений и презентаций.<br>
+  Типы и модели оборудования уточняются по спецификации проекта; фотографии — собственность NURA.
+</footer>
+
+<script>
+var CARDS=[
+ {id:'transformer',n:8,tag:'Силовое оборудование',title:'Силовой трансформатор 110 кВ · CHINT · 40 МВА',
+  specs:['Мощность: <b>40 МВА</b> (на объекте — 2 шт.)','Напряжение: <b>110 / 10 кВ</b>, регулирование РПН',
+         'Охлаждение: радиаторные батареи + принудительный обдув','Производитель: <b>CHINT</b> · модель по спецификации проекта']},
+ {id:'breaker',n:4,tag:'Коммутационная техника',title:'Выключатель элегазовый 110 кВ',
+  specs:['Исполнение: <b>колонковое</b>, 3 полюса на общей раме','Изоляция: элегаз (SF₆), фарфоровые покрышки',
+         'Привод: пружинный, со шкафом управления','Монтаж на опорных металлоконструкциях ОРУ']},
+ {id:'disconnector',n:6,tag:'Коммутационная техника',title:'Разъединитель 110 кВ с заземлителями',
+  specs:['Тип: <b>двухколонковый</b>, горизонтально-поворотный','Ножи заземления, моторные приводы',
+         'Пофазный монтаж на высоких стойках','Кадры монтажа — установка и регулировка на объекте']},
+ {id:'instrument',n:3,tag:'Измерения и защита',title:'Измерительные трансформаторы и ОПН 110 кВ',
+  specs:['Трансформаторы тока и напряжения <b>110 кВ</b>','Ограничители перенапряжений (ОПН)',
+         'Фарфоровая изоляция, монтаж на стойках','Шкафы вторичных цепей у каждой группы']},
+ {id:'zru',n:6,tag:'Производство NURA ELECTRIC',title:'Блочно-модульные здания ЗРУ и ОПУ',
+  specs:['Быстровозводимые модули полной заводской готовности','КРУ 10 кВ, НКУ, шкафы РЗА и вторичной коммутации — <b>NURA Electric</b>',
+         'Кабельные лотки и вводы в заводском исполнении','Монтаж на свайном основании — без мокрых процессов']},
+ {id:'structures',n:4,tag:'Строительная часть',title:'Металлоконструкции и порталы ОРУ',
+  specs:['Порталы, стойки под оборудование — <b>горячее цинкование</b>','Решётчатые концевые опоры заходов ВЛ',
+         'Фундаменты и лежневые основания','Кабельные лотки и наземные каналы']},
+ {id:'site',n:9,tag:'Объект целиком',title:'ПС NIM 110 кВ — ход строительства и готовый объект',wide:true,
+  specs:['Аэрофотосъёмка этапов: от монтажа ОРУ до готовой станции','Компоновка: 2 трансформатора · ОРУ-110 · блочные ЗРУ/ОПУ',
+         'Заход ВЛ 110 кВ, двухцепная анкерная опора','Панорама 360° прилагается в исходных материалах']},
+];
+var grid=document.getElementById('grid');
+var state={};
+function src(c,i){return 'photos/'+c+'/'+String(i).padStart(2,'0')+'.jpg';}
+CARDS.forEach(function(c){
+  state[c.id]=1;
+  var el=document.createElement('article');
+  el.className='card'+(c.wide?' wide':'');
+  var th='';
+  for(var i=1;i<=c.n;i++)
+    th+='<img loading="lazy" src="'+src(c.id,i)+'" data-i="'+i+'" class="'+(i===1?'on':'')+'" alt="ракурс '+i+'">';
+  el.innerHTML=
+   '<div class="ph" data-c="'+c.id+'">'+
+     '<img id="main-'+c.id+'" src="'+src(c.id,1)+'" alt="'+c.title+'">'+
+     '<span class="cnt"><span id="num-'+c.id+'">1</span> / '+c.n+'</span>'+
+     '<button class="nav prev" data-d="-1" aria-label="Предыдущий ракурс">‹</button>'+
+     '<button class="nav next" data-d="1" aria-label="Следующий ракурс">›</button>'+
+   '</div>'+
+   '<div class="thumbs" id="th-'+c.id+'">'+th+'</div>'+
+   '<div class="body"><div class="tag">'+c.tag+'</div><h2>'+c.title+'</h2>'+
+   '<ul class="spec">'+c.specs.map(function(s){return '<li>'+s+'</li>';}).join('')+'</ul></div>';
+  grid.appendChild(el);
+});
+function setImg(cid,i){
+  var c=CARDS.find(function(x){return x.id===cid;});
+  i=((i-1)%c.n+c.n)%c.n+1; state[cid]=i;
+  document.getElementById('main-'+cid).src=src(cid,i);
+  document.getElementById('num-'+cid).textContent=i;
+  document.querySelectorAll('#th-'+cid+' img').forEach(function(t){
+    t.classList.toggle('on',+t.dataset.i===i);});
+}
+grid.addEventListener('click',function(e){
+  var ph=e.target.closest('.ph');
+  var nav=e.target.closest('.nav');
+  var thumb=e.target.closest('.thumbs img');
+  if(nav&&ph){ setImg(ph.dataset.c,state[ph.dataset.c]+ +nav.dataset.d); return; }
+  if(thumb){ var cid=thumb.parentElement.id.slice(3); setImg(cid,+thumb.dataset.i); return; }
+  if(ph&&e.target.tagName==='IMG'){ openLB(ph.dataset.c); }
+});
+/* лайтбокс */
+var lb=document.getElementById('lb'), lbImg=lb.querySelector('img'),
+    lbCap=lb.querySelector('.cap'), lbC=null;
+function openLB(cid){ lbC=cid; showLB(); lb.classList.add('open'); }
+function showLB(){
+  var c=CARDS.find(function(x){return x.id===lbC;});
+  lbImg.src=src(lbC,state[lbC]);
+  lbCap.textContent=c.title+' — ракурс '+state[lbC]+' из '+c.n;
+}
+lb.querySelector('.x').onclick=function(){lb.classList.remove('open');};
+lb.addEventListener('click',function(e){ if(e.target===lb) lb.classList.remove('open'); });
+lb.querySelector('.prev').onclick=function(){ setImg(lbC,state[lbC]-1); showLB(); };
+lb.querySelector('.next').onclick=function(){ setImg(lbC,state[lbC]+1); showLB(); };
+addEventListener('keydown',function(e){
+  if(!lb.classList.contains('open')) return;
+  if(e.key==='Escape') lb.classList.remove('open');
+  if(e.key==='ArrowLeft'){ setImg(lbC,state[lbC]-1); showLB(); }
+  if(e.key==='ArrowRight'){ setImg(lbC,state[lbC]+1); showLB(); }
+});
+</script>
